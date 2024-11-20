@@ -3,6 +3,7 @@ import { Form, useNavigation, useActionData } from '@remix-run/react'
 import Webcam from 'react-webcam'
 import { Button } from './ui/button'
 import { Icon } from './ui/icon'
+import { type RecipeResponse } from '#app/utils/ai.server'
 
 const WEBCAM_CONSTRAINTS = {
 	width: 720,
@@ -23,7 +24,19 @@ function dataURLtoFile(dataurl: string, filename: string) {
 	return new File([u8arr], filename, { type: mime })
 }
 
-export function FridgeImageInput() {
+type FridgeImageInputProps = {
+	onAnalyzeStart?: () => void
+	onAnalyzeComplete?: (data: RecipeResponse) => void
+	onError?: (error: string) => void
+	onGeneratingRecipes?: () => void
+}
+
+export function FridgeImageInput({
+	onAnalyzeStart,
+	onAnalyzeComplete,
+	onError,
+	onGeneratingRecipes,
+}: FridgeImageInputProps) {
 	const webcamRef = useRef<Webcam>(null)
 	const [imageData, setImageData] = useState<string | null>(null)
 	const [cameraError, setCameraError] = useState<string | null>(null)
@@ -58,6 +71,7 @@ export function FridgeImageInput() {
 	async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
 		event.preventDefault()
 		setSubmitError(null)
+		onAnalyzeStart?.()
 
 		if (!imageData) return
 
@@ -66,24 +80,71 @@ export function FridgeImageInput() {
 			const file = dataURLtoFile(imageData, 'fridge-image.jpg')
 			formData.append('image', file)
 
-			const response = await fetch('/resources/fridge-scan', {
+			// First analyze the image
+			const analyzeResponse = await fetch('/resources/analyze-image', {
 				method: 'POST',
 				body: formData,
 			})
 
-			if (!response.ok) {
-				const data = (await response.json()) as { error?: string }
-				throw new Error(data.error || 'Failed to analyze image')
+			if (!analyzeResponse.ok) {
+				const error = (await analyzeResponse.json()) as { message: string }
+				throw new Error(error.message || 'Failed to analyze image')
 			}
 
-			const data = await response.json()
-			console.log('Analysis result:', data)
-			// Handle successful response here
+			const data = await analyzeResponse.json()
+			if (
+				!data ||
+				typeof data !== 'object' ||
+				!('ingredients' in data) ||
+				typeof data.ingredients !== 'string'
+			) {
+				throw new Error('Invalid response format')
+			}
+
+			const { ingredients } = data
+			onGeneratingRecipes?.()
+
+			// Then generate recipes
+			const recipesResponse = await fetch('/resources/generate-recipes', {
+				method: 'POST',
+				headers: { 'Content-Type': 'application/json' },
+				body: JSON.stringify({ ingredients }),
+			})
+
+			const recipes = await recipesResponse.json()
+			if (!recipesResponse.ok) {
+				throw new Error(
+					(recipes as { error: string }).error || 'Failed to generate recipes',
+				)
+			}
+
+			if (
+				!recipes ||
+				typeof recipes !== 'object' ||
+				!('detectedIngredients' in recipes) ||
+				!('suggestedRecipes' in recipes) ||
+				!Array.isArray(recipes.detectedIngredients) ||
+				!Array.isArray(recipes.suggestedRecipes)
+			) {
+				throw new Error('Invalid recipes response format')
+			}
+
+			onAnalyzeComplete?.({
+				detectedIngredients: recipes.detectedIngredients as Array<{
+					name: string
+					category: string
+					quantity?: string
+				}>,
+				suggestedRecipes: recipes.suggestedRecipes as Array<
+					RecipeResponse['suggestedRecipes'][number]
+				>,
+			})
 		} catch (error) {
 			console.error('Submission error:', error)
-			setSubmitError(
-				error instanceof Error ? error.message : 'Failed to submit image',
-			)
+			const message =
+				error instanceof Error ? error.message : 'Failed to submit image'
+			setSubmitError(message)
+			onError?.(message)
 		}
 	}
 

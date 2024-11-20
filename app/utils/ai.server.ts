@@ -131,11 +131,15 @@ export async function generateRecipes(ingredients: string) {
 	return parsed.data
 }
 
-export async function analyzeAndGenerateRecipes(imageUrl: string) {
+export async function analyzeImage(imageUrl: string) {
 	const ingredients = await analyzeFridgeContents(imageUrl)
 	if (!ingredients) {
 		throw new Error('No ingredients were detected in the image. Please try again with a clearer photo of food items')
 	}
+	return ingredients
+}
+
+export async function generateRecipesFromIngredients(ingredients: string) {
 	const recipes = await generateRecipes(ingredients)
-	return { ingredients, recipes }
+	return recipes
 }
