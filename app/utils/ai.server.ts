@@ -1,9 +1,7 @@
-import { OpenAI } from 'openai'
 import { z } from 'zod'
+import { OpenAIProvider } from './providers/openai.server.ts'
 
-const openai = new OpenAI({
-	apiKey: process.env.NODE_ENV === 'test' ? 'test-key' : undefined,
-})
+const openai = OpenAIProvider.client()
 
 const RecipeSchema = z.object({
 	title: z.string(),

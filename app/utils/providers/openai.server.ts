@@ -1,6 +1,11 @@
-import { vi } from 'vitest'
+import { OpenAI } from 'openai'
+import { MOCK_OPENAI, MOCK_OPENAI_HEADER } from './constants'
 
-export const mockOpenAIResponse = {
+const shouldMock =
+	process.env.OPENAI_API_KEY?.startsWith('MOCK_') ||
+	process.env.NODE_ENV === 'test'
+
+const mockResponse = {
 	choices: [
 		{
 			message: {
@@ -38,14 +43,17 @@ export const mockOpenAIResponse = {
 	],
 }
 
-export const mockOpenAI = {
-	OpenAI: vi.fn(() => ({
-		chat: {
-			completions: {
-				create: vi.fn().mockResolvedValue(mockOpenAIResponse),
-			},
-		},
-	})),
+export class OpenAIProvider {
+	static client() {
+		if (shouldMock) {
+			return {
+				chat: {
+					completions: {
+						create: async () => mockResponse,
+					},
+				},
+			}
+		}
+		return new OpenAI()
+	}
 }
-
-vi.mock('openai', () => mockOpenAI)
