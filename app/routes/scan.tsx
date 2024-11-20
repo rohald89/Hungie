@@ -1,7 +1,13 @@
-import { type MetaFunction } from '@remix-run/node'
+import { type LoaderFunctionArgs, type MetaFunction } from '@remix-run/node'
 import { FridgeImageInput } from '#app/components/fridge-image-input'
+import { requireUserId } from '#app/utils/auth.server.js'
 
 export const meta: MetaFunction = () => [{ title: 'Scan Fridge | RecipeRadar' }]
+
+export async function loader({ request }: LoaderFunctionArgs) {
+	await requireUserId(request)
+	return null
+}
 
 export default function ScanRoute() {
 	return (
