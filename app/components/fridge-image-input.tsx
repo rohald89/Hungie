@@ -106,19 +106,29 @@ export function FridgeImageInput() {
 							className="aspect-square w-full rounded-md object-cover"
 						/>
 					) : showCamera ? (
-						<Webcam
-							ref={webcamRef}
-							screenshotFormat="image/jpeg"
-							videoConstraints={WEBCAM_CONSTRAINTS}
-							className="aspect-square w-full rounded-md"
-							mirrored={false}
-							onUserMediaError={(error) => {
-								console.error('Webcam Error:', error)
-								setCameraError(
-									'Unable to access camera. Please ensure you have granted camera permissions.',
-								)
-							}}
-						/>
+						<div className="flex flex-col gap-4">
+							<Webcam
+								ref={webcamRef}
+								screenshotFormat="image/jpeg"
+								videoConstraints={WEBCAM_CONSTRAINTS}
+								className="aspect-square w-full rounded-md"
+								mirrored={false}
+								onUserMediaError={(error) => {
+									console.error('Webcam Error:', error)
+									setCameraError(
+										'Unable to access camera. Please ensure you have granted camera permissions.',
+									)
+								}}
+							/>
+							<Button
+								onClick={capture}
+								className="w-full"
+								disabled={!webcamRef.current}
+							>
+								<Icon name="camera" className="mr-2" />
+								Capture Photo
+							</Button>
+						</div>
 					) : (
 						<div className="flex aspect-square w-full flex-col items-center justify-center gap-4 rounded-md border-2 border-dashed">
 							<div className="flex flex-col items-center gap-2">
@@ -143,7 +153,7 @@ export function FridgeImageInput() {
 								Start Over
 							</Button>
 						</>
-					) : (
+					) : !showCamera ? (
 						<div className="flex w-full gap-2">
 							<Button
 								variant="outline"
@@ -166,7 +176,7 @@ export function FridgeImageInput() {
 								/>
 							</div>
 						</div>
-					)}
+					) : null}
 				</div>
 			</div>
 		</div>
