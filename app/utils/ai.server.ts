@@ -1,7 +1,9 @@
 import { OpenAI } from 'openai'
 import { z } from 'zod'
 
-const openai = new OpenAI()
+const openai = new OpenAI({
+	apiKey: process.env.NODE_ENV === 'test' ? 'test-key' : undefined,
+})
 
 const RecipeSchema = z.object({
 	title: z.string(),
