@@ -1,7 +1,7 @@
 import 'dotenv/config'
 import './db-setup.ts'
 import '#app/utils/env.server.ts'
-// we need these to be imported first 👆
+import '../mocks/openai'
 
 import { cleanup } from '@testing-library/react'
 import { afterEach, beforeEach, vi, type MockInstance } from 'vitest'
