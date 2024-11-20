@@ -54,6 +54,8 @@ export class OpenAIProvider {
 				},
 			}
 		}
-		return new OpenAI()
+		return new OpenAI({
+			apiKey: process.env.OPENAI_API_KEY || MOCK_OPENAI,
+        })
 	}
 }
