@@ -29,6 +29,7 @@ export function FridgeImageInput() {
 	const [cameraError, setCameraError] = useState<string | null>(null)
 	const [submitError, setSubmitError] = useState<string | null>(null)
 	const [showCamera, setShowCamera] = useState(false)
+	const [isWebcamReady, setIsWebcamReady] = useState(false)
 	const navigation = useNavigation()
 	const isSubmitting = navigation.state === 'submitting'
 
@@ -113,6 +114,7 @@ export function FridgeImageInput() {
 								videoConstraints={WEBCAM_CONSTRAINTS}
 								className="aspect-square w-full rounded-md"
 								mirrored={false}
+								onUserMedia={() => setIsWebcamReady(true)}
 								onUserMediaError={(error) => {
 									console.error('Webcam Error:', error)
 									setCameraError(
@@ -123,7 +125,7 @@ export function FridgeImageInput() {
 							<Button
 								onClick={capture}
 								className="w-full"
-								disabled={!webcamRef.current}
+								disabled={!isWebcamReady}
 							>
 								<Icon name="camera" className="mr-2" />
 								Capture Photo

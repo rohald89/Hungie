@@ -43,8 +43,10 @@ export async function analyzeFridgeContents(imageUrl: string) {
 		messages: [
 			{
 				role: 'system',
-				content:
-					'You are a kitchen assistant that identifies ingredients in a fridge or pantry. List all visible food items and ingredients, categorized by type (produce, dairy, meat, etc). Only include items that are clearly visible and identifiable.',
+				content: `You are a kitchen assistant that identifies ingredients in a fridge or pantry.
+					If the image is empty, unclear, or doesn't contain food items, respond with "NO_INGREDIENTS_FOUND".
+					Otherwise, list all visible food items and ingredients, categorized by type (produce, dairy, meat, etc).
+					Only include items that are clearly visible and identifiable.`,
 			},
 			{
 				role: 'user',
@@ -65,7 +67,8 @@ export async function analyzeFridgeContents(imageUrl: string) {
 		max_tokens: 500,
 	})
 
-	return completion.choices[0]?.message.content ?? ''
+	const content = completion.choices[0]?.message.content ?? ''
+	return content === 'NO_INGREDIENTS_FOUND' ? null : content
 }
 
 export async function generateRecipes(ingredients: string) {
@@ -130,9 +133,9 @@ export async function generateRecipes(ingredients: string) {
 
 export async function analyzeAndGenerateRecipes(imageUrl: string) {
 	const ingredients = await analyzeFridgeContents(imageUrl)
-	const recipes = await generateRecipes(ingredients)
-	return {
-		ingredients,
-		recipes,
+	if (!ingredients) {
+		throw new Error('No ingredients were detected in the image. Please try again with a clearer photo of food items')
 	}
+	const recipes = await generateRecipes(ingredients)
+	return { ingredients, recipes }
 }
