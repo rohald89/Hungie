@@ -16,14 +16,6 @@ import {
 	deleteGitHubUser,
 	insertGitHubUser,
 } from './mocks/github.ts'
-import { vi } from 'vitest'
-
-vi.mock('#app/utils/ai.server', () => ({
-	analyzeAndGenerateRecipes: vi.fn(() => ({
-		ingredients: [],
-		recipes: [],
-	})),
-}))
 
 export * from './db-utils.ts'
 
