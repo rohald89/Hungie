@@ -55,7 +55,7 @@ export default function ScanRoute() {
 							className="animate-fade-up"
 							style={{ animationDelay: `${i * 150}ms` }}
 						>
-							<RecipeCard recipe={recipe} />
+							<RecipeCard recipe={recipe} size="sm" />
 						</div>
 					))}
 				</div>
