@@ -29,7 +29,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
 						]
 					: undefined,
 			},
-			include: { ingredients: true },
+			include: { ingredients: true, image: true },
 			orderBy: { createdAt: 'desc' },
 			take: RECIPES_PER_PAGE,
 			skip,

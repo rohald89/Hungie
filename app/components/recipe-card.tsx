@@ -1,13 +1,46 @@
-import { type Recipe } from '#app/utils/ai.server'
+import { type Recipe as AIRecipe } from '#app/utils/ai.server'
 import { cn } from '#app/utils/misc.js'
+import { useFetcher } from '@remix-run/react'
+import { useEffect } from 'react'
+
+type DatabaseRecipe = {
+	id: string
+	title: string
+	cookingTime: number
+	difficulty: string
+	ingredients: Array<{ item: string; amount: string }>
+	nutritionalInfo: {
+		calories: number
+		protein: number
+		carbs: number
+		fat: number
+	}
+	image?: { id: string } | null
+}
 
 export function RecipeCard({
 	recipe,
 	size = 'md',
 }: {
-	recipe: Recipe
+	recipe: DatabaseRecipe
 	size?: 'sm' | 'md'
 }) {
+	const imageFetcher = useFetcher<{ imageUrl: string }>()
+
+	useEffect(() => {
+		if (!('image' in recipe) && recipe.id) {
+			imageFetcher.submit(
+				{ recipeId: recipe.id, title: recipe.title },
+				{ method: 'POST', action: '/resources/generate-recipe-image' },
+			)
+		}
+	}, [recipe.id])
+
+	const imageUrl =
+		'image' in recipe && recipe.image?.id
+			? `/resources/recipe-images/${recipe.image.id}`
+			: imageFetcher.data?.imageUrl
+
 	return (
 		<div
 			className={cn(
@@ -15,6 +48,13 @@ export function RecipeCard({
 				size === 'sm' ? 'p-4' : 'space-y-4 p-6',
 			)}
 		>
+			{imageUrl && (
+				<img
+					src={imageUrl}
+					alt={recipe.title}
+					className="aspect-video w-full rounded-md object-cover"
+				/>
+			)}
 			<div>
 				<h3
 					className={cn('font-semibold', size === 'sm' ? 'text-lg' : 'text-xl')}

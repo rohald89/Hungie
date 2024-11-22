@@ -1,5 +1,33 @@
 import { type Recipe as AIRecipe } from './ai.server'
 import { prisma } from './db.server'
+import { OpenAIProvider } from './providers/openai.server'
+
+const openai = OpenAIProvider.client()
+
+async function generateAndSaveImage(title: string, recipeId: string) {
+	const completion = await openai.images.generate({
+		model: 'dall-e-3',
+		prompt: `A professional food photography style image of ${title}. The image should be well-lit, appetizing, and styled like a cookbook photo.`,
+		size: '1024x1024',
+		quality: 'standard',
+		n: 1,
+	})
+
+	const imageUrl = completion.data[0]?.url
+	if (!imageUrl) throw new Error('Failed to generate image')
+
+	const response = await fetch(imageUrl)
+	const buffer = Buffer.from(await response.arrayBuffer())
+
+	await prisma.recipeImage.create({
+		data: {
+			recipeId,
+			contentType: 'image/jpeg',
+			blob: buffer,
+			altText: `AI generated image of ${title}`,
+		},
+	})
+}
 
 export async function saveRecipe({
 	recipe,
@@ -8,7 +36,7 @@ export async function saveRecipe({
 	recipe: AIRecipe
 	userId: string
 }) {
-	return prisma.recipe.create({
+	const savedRecipe = await prisma.recipe.create({
 		data: {
 			title: recipe.title,
 			cookingTime: recipe.cookingTime,
@@ -28,6 +56,12 @@ export async function saveRecipe({
 		},
 		include: {
 			ingredients: true,
+			image: true,
 		},
 	})
+
+	// Generate image after recipe is saved
+	await generateAndSaveImage(recipe.title, savedRecipe.id)
+
+	return savedRecipe
 }
