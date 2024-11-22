@@ -3,23 +3,25 @@ import { OpenAIProvider } from './providers/openai.server.ts'
 
 const openai = OpenAIProvider.client()
 
+export const DIFFICULTIES = ['EASY', 'MEDIUM', 'HARD'] as const
+export type Difficulty = typeof DIFFICULTIES[number]
+
 const RecipeSchema = z.object({
 	title: z.string(),
-	cookingTime: z.string(),
-	difficulty: z.string(),
+	cookingTime: z.number().min(1),
+	difficulty: z.enum(DIFFICULTIES),
 	ingredients: z.array(
 		z.object({
 			item: z.string(),
 			amount: z.string(),
-			required: z.boolean(),
 		}),
 	),
 	instructions: z.array(z.string()),
 	nutritionalInfo: z.object({
-		calories: z.string(),
-		protein: z.string(),
-		carbs: z.string(),
-		fat: z.string(),
+		calories: z.number().min(0),
+		protein: z.number().min(0),
+		carbs: z.number().min(0),
+		fat: z.number().min(0),
 	}),
 })
 
@@ -71,57 +73,47 @@ export async function analyzeFridgeContents(imageUrl: string) {
 	return content === 'NO_INGREDIENTS_FOUND' ? null : content
 }
 
+
 export async function generateRecipes(ingredients: string) {
 	const completion = await openai.chat.completions.create({
 		model: 'gpt-4o-mini',
 		messages: [
 			{
 				role: 'system',
-				content: `You are a creative chef. Generate 3 possible recipes using the provided ingredients.
-				Focus on recipes that use mostly the available ingredients, but you can suggest a few additional ingredients if needed.
-				For each recipe, include:
-				- Title
-				- Cooking time
-				- Difficulty level
-				- List of ingredients (marking which ones are from the user's fridge and which need to be bought)
-				- Step-by-step instructions (do not number the steps)
-				- Basic nutritional information
-
-				Format your response as a JSON object matching this structure:
-				{
-					"detectedIngredients": [
-						{ "name": string, "category": string, "quantity": string }
-					],
-					"suggestedRecipes": [
-						{
+				content: `You are a cooking assistant that generates recipes. Return a raw JSON response (no markdown formatting) with the following structure:
+					{
+						"detectedIngredients": [
+							{ "name": string, "category": string, "quantity": string }
+						],
+						"suggestedRecipes": [{
 							"title": string,
-							"cookingTime": string,
-							"difficulty": string,
+							"cookingTime": number,
+							"difficulty": "EASY" | "MEDIUM" | "HARD",
 							"ingredients": [
-								{ "item": string, "amount": string, "required": boolean }
+								{ "item": string, "amount": string }
 							],
 							"instructions": string[],
 							"nutritionalInfo": {
-								"calories": string,
-								"protein": string,
-								"carbs": string,
-								"fat": string
+								"calories": number,
+								"protein": number,
+								"carbs": number,
+								"fat": number
 							}
-						}
-					]
-				}`,
+						}]
+					}`,
 			},
 			{
 				role: 'user',
 				content: `Generate recipes using these ingredients: ${ingredients}`,
 			},
 		],
-		response_format: { type: 'json_object' },
 	})
 
-	const parsed = RecipeResponseSchema.safeParse(
-		JSON.parse(completion.choices[0]?.message.content ?? ''),
-	)
+	const content = completion.choices[0]?.message.content ?? ''
+	// Clean markdown formatting if present
+	const jsonString = content.replace(/```json\n?|\n?```/g, '').trim()
+
+	const parsed = RecipeResponseSchema.safeParse(JSON.parse(jsonString))
 
 	if (!parsed.success) {
 		console.error('Failed to parse recipe response:', parsed.error)

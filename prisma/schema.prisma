@@ -25,6 +25,8 @@ model User {
   roles       Role[]
   sessions    Session[]
   connections Connection[]
+
+  Recipe Recipe[]
 }
 
 model Note {
@@ -166,4 +168,32 @@ model Connection {
   userId String
 
   @@unique([providerName, providerId])
+}
+
+model Recipe {
+  id            String     @id @default(cuid())
+  title         String
+  cookingTime   Int        // in minutes
+  difficulty    String     @default("EASY")
+  instructions  String     // JSON.stringify/parse for array
+  calories      Int
+  protein       Int        // in grams
+  carbs         Int        // in grams
+  fat           Int        // in grams
+  createdAt     DateTime   @default(now())
+  userId        String
+  user          User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  ingredients   RecipeIngredient[]
+
+  @@index([userId])
+}
+
+model RecipeIngredient {
+  id        String  @id @default(cuid())
+  item      String
+  amount    String  // keeping as string due to varied units
+  recipeId  String
+  recipe    Recipe  @relation(fields: [recipeId], references: [id], onDelete: Cascade)
+
+  @@index([recipeId])
 }

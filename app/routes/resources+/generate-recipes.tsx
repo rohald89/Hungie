@@ -1,10 +1,11 @@
 import { json, type ActionFunctionArgs } from '@remix-run/node'
 import { generateRecipesFromIngredients } from '#app/utils/ai.server'
 import { requireUserId } from '#app/utils/auth.server'
+import { saveRecipe } from '#app/utils/recipes.server'
 
 export async function action({ request }: ActionFunctionArgs) {
 	try {
-		await requireUserId(request)
+		const userId = await requireUserId(request)
 
 		const body = await request.json()
 		if (!body || typeof body !== 'object' || !('ingredients' in body)) {
@@ -16,6 +17,12 @@ export async function action({ request }: ActionFunctionArgs) {
 		}
 
 		const recipes = await generateRecipesFromIngredients(ingredients)
+
+		// Save all generated recipes
+		await Promise.all(
+			recipes.suggestedRecipes.map((recipe) => saveRecipe({ recipe, userId })),
+		)
+
 		return json(recipes)
 	} catch (error) {
 		console.error('Failed to generate recipes:', error)
