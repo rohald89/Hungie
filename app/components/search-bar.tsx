@@ -20,7 +20,7 @@ export function SearchBar({
 	const submit = useSubmit()
 	const isSubmitting = useIsPending({
 		formMethod: 'GET',
-		formAction: '/users',
+		formAction: '/recipes',
 	})
 
 	const handleFormChange = useDebounce((form: HTMLFormElement) => {
@@ -30,20 +30,20 @@ export function SearchBar({
 	return (
 		<Form
 			method="GET"
-			action="/users"
+			action="/recipes"
 			className="flex flex-wrap items-center justify-center gap-2"
 			onChange={(e) => autoSubmit && handleFormChange(e.currentTarget)}
 		>
 			<div className="flex-1">
 				<Label htmlFor={id} className="sr-only">
-					Search
+					Search Recipes
 				</Label>
 				<Input
 					type="search"
 					name="search"
 					id={id}
 					defaultValue={searchParams.get('search') ?? ''}
-					placeholder="Search"
+					placeholder="Search recipes..."
 					className="w-full"
 					autoFocus={autoFocus}
 				/>
@@ -55,7 +55,7 @@ export function SearchBar({
 					className="flex w-full items-center justify-center"
 				>
 					<Icon name="magnifying-glass" size="md" />
-					<span className="sr-only">Search</span>
+					<span className="sr-only">Search Recipes</span>
 				</StatusButton>
 			</div>
 		</Form>
