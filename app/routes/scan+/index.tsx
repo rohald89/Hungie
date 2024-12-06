@@ -113,18 +113,14 @@ function ScanPanel() {
 			console.log('No image captured')
 			return
 		}
-		console.log('Image captured:', imageSrc.substring(0, 50) + '...')
 
 		// Convert base64 to File object
 		const blob = dataURLtoFile(imageSrc, 'webcam-photo.jpg')
-		console.log('Converted to blob:', blob)
 
 		// Find first empty slot
 		const emptyIndex = imageList.findIndex(
 			(image) => !image.getFieldset().file.value,
 		)
-		console.log('Empty index:', emptyIndex)
-
 		if (emptyIndex !== -1) {
 			// Get the field
 			const imageField = imageList[emptyIndex]?.getFieldset().file
@@ -155,80 +151,84 @@ function ScanPanel() {
 	}, [form, fields.images.name, imageList])
 
 	return (
-		<PanelWrapper>
-			<h3 className="mt-4 text-center text-h6 uppercase text-muted-foreground">
-				Camera
-			</h3>
+		<PanelWrapper title="Camera">
 			{isPending ? (
 				<AnalyzingImages />
 			) : (
-				<div className="mb-8">
-					{showCamera ? (
-						<div className="relative mx-auto w-full max-w-2xl">
-							<Webcam
-								ref={webcamRef}
-								screenshotFormat="image/jpeg"
-								className="w-full rounded-lg"
-							/>
-							<div className="absolute bottom-4 left-1/2 flex -translate-x-1/2 gap-4">
-								<Button onClick={capture} className="bg-primary text-white">
-									<Icon name="camera" className="mr-2" />
-									Capture
-								</Button>
-								<Button onClick={() => setShowCamera(false)} variant="outline">
-									Cancel
-								</Button>
+				<>
+					<div className="mb-8">
+						{showCamera ? (
+							<div className="relative mx-auto w-full max-w-2xl">
+								<Webcam
+									ref={webcamRef}
+									screenshotFormat="image/jpeg"
+									className="w-full rounded-lg"
+								/>
+								<button
+									onClick={() => setShowCamera(false)}
+									className="absolute right-4 top-4 flex h-10 w-10 items-center justify-center rounded-full bg-black/30 text-white backdrop-blur-sm hover:bg-black/40"
+								>
+									<Icon name="cross-1" className="h-5 w-5" />
+								</button>
+								<div className="absolute bottom-8 left-1/2 -translate-x-1/2">
+									<div className="relative h-[50px] w-[50px]">
+										<div className="absolute -inset-4 rounded-full border-4 border-white bg-white/20 backdrop-blur-sm" />
+										<button
+											onClick={capture}
+											className="relative h-[50px] w-[50px] rounded-full bg-white shadow-lg transition-transform hover:scale-105 active:scale-95"
+										/>
+									</div>
+								</div>
 							</div>
-						</div>
-					) : (
-						<Button
-							onClick={() => setShowCamera(true)}
-							className="mb-4"
-							disabled={imageList.length >= 5}
-						>
-							<Icon name="camera" className="mr-2" />
-							Take Photo
-						</Button>
-					)}
-				</div>
-			)}
-
-			<FormProvider context={form.context}>
-				<Form
-					method="POST"
-					action="/scan"
-					className="flex h-full flex-col gap-y-4"
-					{...getFormProps(form)}
-					encType="multipart/form-data"
-				>
-					<div className="flex flex-wrap gap-4">
-						{imageList.map((image, index) => (
-							<ImageChooser
-								key={image.key ?? index}
-								meta={image}
-								onRemove={() =>
-									form.remove({
-										name: fields.images.name,
-										index,
-									})
-								}
-							/>
-						))}
+						) : (
+							<Button
+								onClick={() => setShowCamera(true)}
+								className="mb-4"
+								disabled={imageList.length >= 5}
+							>
+								<Icon name="camera" className="mr-2" />
+								Take Photo
+							</Button>
+						)}
 					</div>
-					<ErrorList id={form.errorId} errors={form.errors} />
-					{imageList.some((image) => image.getFieldset().file.value) && (
-						<StatusButton
-							type="submit"
-							disabled={isPending}
-							status={isPending ? 'pending' : 'idle'}
-							className="mt-4"
+					<FormProvider context={form.context}>
+						<Form
+							method="POST"
+							action="/scan"
+							className="flex h-full flex-col gap-y-4"
+							{...getFormProps(form)}
+							encType="multipart/form-data"
 						>
-							<Icon name="check" className="mr-2" />
-							Analyze Images
-						</StatusButton>
-					)}
-				</Form>
-			</FormProvider>
+							<div className="flex flex-wrap gap-4">
+								{imageList.map((image, index) => (
+									<ImageChooser
+										key={image.key ?? index}
+										meta={image}
+										onRemove={() =>
+											form.remove({
+												name: fields.images.name,
+												index,
+											})
+										}
+									/>
+								))}
+							</div>
+							<ErrorList id={form.errorId} errors={form.errors} />
+							{imageList.some((image) => image.getFieldset().file.value) && (
+								<StatusButton
+									type="submit"
+									disabled={isPending}
+									status={isPending ? 'pending' : 'idle'}
+									className="mt-4"
+								>
+									<Icon name="check" className="mr-2" />
+									Analyze Images
+								</StatusButton>
+							)}
+						</Form>
+					</FormProvider>
+				</>
+			)}
 		</PanelWrapper>
 	)
 }
@@ -282,7 +282,7 @@ function ImageChooser({
 						</div>
 					) : (
 						<div className="flex h-32 w-32 items-center justify-center rounded-lg border border-muted-foreground text-4xl text-muted-foreground">
-							<Icon name="plus" />
+							<Icon name="upload2" />
 						</div>
 					)}
 					<input
@@ -312,10 +312,20 @@ function ImageChooser({
 }
 
 function AnalyzingImages() {
+	const [dots, setDots] = useState(1)
+
+	useEffect(() => {
+		const interval = setInterval(() => {
+			setDots((prev) => (prev === 3 ? 1 : prev + 1))
+		}, 500)
+
+		return () => clearInterval(interval)
+	}, [])
+
 	return (
-		<div className="flex h-full items-center justify-center">
-			<p className="text-h6">Analyzing images...</p>
-		</div>
+		<p className="text-center text-h6 text-muted-foreground">
+			Analyzing images{'.'.repeat(dots)}
+		</p>
 	)
 }
 

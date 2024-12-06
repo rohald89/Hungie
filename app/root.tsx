@@ -229,14 +229,16 @@ function App() {
 
 					<footer className="mt-auto text-body-md font-bold text-muted-foreground">
 						<nav>
-							<ul className="flex gap-4">
+							<ul className="flex items-center gap-4">
 								<li>
 									<Link to="/careers">Careers</Link>
 								</li>
-								<li>
+								<li className="flex items-center gap-4">
+									<div className="h-1 w-1 bg-muted-foreground" />
 									<Link to="/privacy">Privacy</Link>
 								</li>
-								<li>
+								<li className="flex items-center gap-4">
+									<div className="h-1 w-1 bg-muted-foreground" />
 									<Link to="/terms">Terms</Link>
 								</li>
 							</ul>

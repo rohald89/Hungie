@@ -33,10 +33,7 @@ function IngredientsPanel() {
 	if (!data) return null
 
 	return (
-		<PanelWrapper>
-			<h3 className="mt-4 text-center text-h6 text-muted-foreground">
-				Item Checklist
-			</h3>
+		<PanelWrapper title="Item Checklist">
 			<div className="mt-8 grid grid-cols-2 gap-8">
 				{Object.entries(data.ingredients).map(([category, items]) => (
 					<div key={category} className="space-y-4">
