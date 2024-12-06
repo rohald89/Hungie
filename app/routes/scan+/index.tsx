@@ -199,32 +199,34 @@ function ScanPanel() {
 							{...getFormProps(form)}
 							encType="multipart/form-data"
 						>
-							<div className="flex flex-wrap gap-4">
-								{imageList.map((image, index) => (
-									<ImageChooser
-										key={image.key ?? index}
-										meta={image}
-										onRemove={() =>
-											form.remove({
-												name: fields.images.name,
-												index,
-											})
-										}
-									/>
-								))}
+							<div className="flex justify-between">
+								<div className="flex max-w-lg flex-row-reverse justify-end gap-4 overflow-x-scroll">
+									{imageList.map((image, index) => (
+										<ImageChooser
+											key={image.key ?? index}
+											meta={image}
+											onRemove={() =>
+												form.remove({
+													name: fields.images.name,
+													index,
+												})
+											}
+										/>
+									))}
+								</div>
+								{imageList.some((image) => image.getFieldset().file.value) && (
+									<StatusButton
+										type="submit"
+										disabled={isPending}
+										status={isPending ? 'pending' : 'idle'}
+										className="h-20 w-20"
+									>
+										<Icon name="check" className="text-4xl" />
+										<p className="sr-only">Analyze Images</p>
+									</StatusButton>
+								)}
 							</div>
 							<ErrorList id={form.errorId} errors={form.errors} />
-							{imageList.some((image) => image.getFieldset().file.value) && (
-								<StatusButton
-									type="submit"
-									disabled={isPending}
-									status={isPending ? 'pending' : 'idle'}
-									className="mt-4"
-								>
-									<Icon name="check" className="mr-2" />
-									Analyze Images
-								</StatusButton>
-							)}
 						</Form>
 					</FormProvider>
 				</>
@@ -253,8 +255,8 @@ function ImageChooser({
 			<div className="relative">
 				<label
 					htmlFor={fields.file.id}
-					className={cn('group block h-32 w-32 rounded-lg', {
-						'bg-accent opacity-40 focus-within:opacity-100 hover:opacity-100':
+					className={cn('group block h-24 w-24 rounded-lg', {
+						'bg-secondary focus-within:opacity-100 hover:opacity-100':
 							!previewImage,
 						'cursor-pointer': true,
 					})}
@@ -264,10 +266,10 @@ function ImageChooser({
 							<img
 								src={previewImage}
 								alt={fields.altText.value ?? ''}
-								className="h-32 w-32 rounded-lg object-cover"
+								className="h-24 w-24 rounded-lg object-cover"
 							/>
 							<div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100">
-								<div className="absolute inset-0 rounded-lg bg-black/30 backdrop-blur-sm" />
+								<div className="absolute inset-0 rounded-lg bg-black/10 backdrop-blur-sm" />
 								<button
 									type="button"
 									onClick={(e) => {
@@ -276,17 +278,17 @@ function ImageChooser({
 									}}
 									className="relative z-10 text-foreground"
 								>
-									<Icon name="trash2" className="h-12" />
+									<Icon name="trash2" className="text-2xl" />
 								</button>
 							</div>
 						</div>
 					) : (
-						<div className="flex h-32 w-32 items-center justify-center rounded-lg border border-muted-foreground text-4xl text-muted-foreground">
+						<div className="flex h-24 w-24 items-center justify-center rounded-lg border border-transparent text-4xl text-muted-foreground group-hover:border-muted-foreground">
 							<Icon name="upload2" />
 						</div>
 					)}
 					<input
-						className="absolute left-0 top-0 z-0 h-32 w-32 cursor-pointer opacity-0"
+						className="absolute left-0 top-0 z-0 h-24 w-24 cursor-pointer opacity-0"
 						onChange={(event) => {
 							const file = event.target.files?.[0]
 							if (file) {
