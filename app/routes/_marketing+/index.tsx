@@ -4,10 +4,6 @@ import { Button } from '#app/components/ui/button.js'
 
 export const meta: MetaFunction = () => [{ title: 'Hungie' }]
 
-export const handle = {
-	panel: StepTwoPanel,
-}
-
 const steps = [
 	'Take photo of your food items 🛒',
 	'Choose recipe 📝',
@@ -38,15 +34,5 @@ export default function Index() {
 				<Button variant="secondary">Login</Button>
 			</div>
 		</main>
-	)
-}
-
-function StepTwoPanel() {
-	console.log('StepTwoPanel')
-	return (
-		<div>
-			{/* Panel content */}
-			TEST
-		</div>
 	)
 }

@@ -230,9 +230,9 @@ function App() {
 
 	return (
 		<>
-			<div className="flex min-h-screen">
+			<div className="flex h-screen overflow-hidden">
 				{/* Left Section */}
-				<div className="flex w-2/5 flex-col p-8">
+				<div className="flex w-2/5 flex-col pb-14 pl-24 pt-20">
 					<header className="mb-auto space-y-2">
 						<Logo />
 						<Slogan />
