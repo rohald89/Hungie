@@ -32,9 +32,11 @@ async function generateAndSaveImage(title: string, recipeId: string) {
 export async function saveRecipe({
 	recipe,
 	userId,
+	scanId,
 }: {
 	recipe: AIRecipe
 	userId: string
+	scanId: string
 }) {
 	const savedRecipe = await prisma.recipe.create({
 		data: {
@@ -47,6 +49,7 @@ export async function saveRecipe({
 			carbs: recipe.nutritionalInfo.carbs,
 			fat: recipe.nutritionalInfo.fat,
 			userId,
+			scanId,
 			ingredients: {
 				create: recipe.ingredients.map(ingredient => ({
 					item: ingredient.item,

@@ -149,11 +149,14 @@ model Recipe {
   fat          Int
   createdAt    DateTime           @default(now())
   userId       String
+  scanId       String?
   user         User               @relation(fields: [userId], references: [id], onDelete: Cascade)
+  scan         Scan?              @relation(fields: [scanId], references: [id], onDelete: SetNull)
   image        RecipeImage?
   ingredients  RecipeIngredient[]
 
   @@index([userId])
+  @@index([scanId])
 }
 
 model RecipeIngredient {
@@ -185,6 +188,7 @@ model Scan {
   userId      String
   user        User        @relation(fields: [userId], references: [id], onDelete: Cascade)
   images      ScanImage[]
+  recipes     Recipe[]
 
   @@index([userId])
 }

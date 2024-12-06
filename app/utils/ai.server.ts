@@ -129,7 +129,9 @@ export async function generateRecipes(ingredients: string) {
 		messages: [
 			{
 				role: 'system',
-				content: `You are a cooking assistant that generates recipes. Return a raw JSON response (no markdown formatting) with the following structure:
+				content: `You are a cooking assistant that generates recipes. The ingredients will be provided in a format like "category: item1, item2; category2: item3, item4".
+					Generate 3 diverse recipes that make good use of the available ingredients.
+					Return a raw JSON response (no markdown formatting) with the following structure:
 					{
 						"detectedIngredients": [
 							{ "name": string, "category": string, "quantity": string }

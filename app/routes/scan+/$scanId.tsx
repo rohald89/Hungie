@@ -1,10 +1,17 @@
 import { json, type LoaderFunctionArgs } from '@remix-run/node'
-import { useRouteLoaderData } from '@remix-run/react'
+import {
+	useRouteLoaderData,
+	useFetcher,
+	useParams,
+	useNavigate,
+} from '@remix-run/react'
 import { PanelWrapper } from '#app/components/panel-wrapper.js'
 import { Icon } from '#app/components/ui/icon'
 import { type Ingredients } from '#app/utils/ai.server'
 import { requireUserId } from '#app/utils/auth.server'
 import { prisma } from '#app/utils/db.server'
+import { Button } from '#app/components/ui/button.js'
+import { useEffect } from 'react'
 
 export async function loader({ request, params }: LoaderFunctionArgs) {
 	const userId = await requireUserId(request)
@@ -29,8 +36,33 @@ export async function loader({ request, params }: LoaderFunctionArgs) {
 
 function IngredientsPanel() {
 	const data = useRouteLoaderData<typeof loader>('routes/scan+/$scanId')
+	const recipeFetcher = useFetcher()
+	const params = useParams()
+	const navigate = useNavigate()
+
+	useEffect(() => {
+		if (recipeFetcher.data && !recipeFetcher.data.error) {
+			navigate(`/scan/${params.scanId}/recipes`)
+		}
+	}, [recipeFetcher.data, params.scanId])
 
 	if (!data) return null
+
+	const handleGenerateRecipes = () => {
+		if (!params.scanId) return
+
+		const ingredientsList = Object.entries(data.ingredients)
+			.map(([category, items]) => `${category}: ${items.join(', ')}`)
+			.join('; ')
+
+		recipeFetcher.submit(
+			{ ingredients: ingredientsList, scanId: params.scanId },
+			{
+				method: 'POST',
+				action: '/resources/generate-recipes',
+			},
+		)
+	}
 
 	return (
 		<PanelWrapper title="Item Checklist">
@@ -54,6 +86,12 @@ function IngredientsPanel() {
 					</div>
 				))}
 			</div>
+			<Button
+				onClick={handleGenerateRecipes}
+				disabled={recipeFetcher.state !== 'idle'}
+			>
+				{recipeFetcher.state !== 'idle' ? 'Generating...' : 'Generate recipes'}
+			</Button>
 		</PanelWrapper>
 	)
 }
