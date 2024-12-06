@@ -42,7 +42,7 @@ export async function action({ request }: ActionFunctionArgs) {
 		const base64Image = `data:${imageFile.type};base64,${buffer.toString('base64')}`
 
 		const ingredients = await analyzeImage(base64Image)
-		return json({ ingredients } satisfies { ingredients: string })
+		return json({ ingredients })
 	} catch (error) {
 		console.error('Failed to analyze image:', error)
 		return json(
