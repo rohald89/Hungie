@@ -2,6 +2,7 @@ import { type Config } from 'tailwindcss'
 
 export const extendedTheme = {
 	colors: {
+		'dark-blue': '#182A74',
 		border: 'hsl(var(--border))',
 		input: {
 			DEFAULT: 'hsl(var(--input))',
@@ -67,8 +68,10 @@ export const extendedTheme = {
 		h4: ['1.75rem', { lineHeight: '2.25rem', fontWeight: '700' }],
 		/** 24px size / 32px high / bold */
 		h5: ['1.5rem', { lineHeight: '2rem', fontWeight: '700' }],
-		/** 16px size / 20px high / bold */
-		h6: ['1rem', { lineHeight: '1.25rem', fontWeight: '700' }],
+		/** 20px size / 24px high / bold */
+		h6: ['1.25rem', { lineHeight: '1.5rem', fontWeight: '700' }],
+		/** 18px size / 22px high / bold */
+		h7: ['1.125rem', { lineHeight: '1.625rem', fontWeight: '700' }],
 
 		/** 32px size / 36px high / normal */
 		'body-2xl': ['2rem', { lineHeight: '2.25rem' }],
@@ -76,8 +79,8 @@ export const extendedTheme = {
 		'body-xl': ['1.75rem', { lineHeight: '2.25rem' }],
 		/** 24px size / 32px high / normal */
 		'body-lg': ['1.5rem', { lineHeight: '2rem' }],
-		/** 20px size / 28px high / normal */
-		'body-md': ['1.25rem', { lineHeight: '1.75rem' }],
+		/** 18px size / 23px high / normal */
+		'body-md': ['1.125rem', { lineHeight: '1.5rem' }],
 		/** 16px size / 20px high / normal */
 		'body-sm': ['1rem', { lineHeight: '1.25rem' }],
 		/** 14px size / 18px high / normal */
@@ -103,5 +106,9 @@ export const extendedTheme = {
 	animation: {
 		'caret-blink': 'caret-blink 1.25s ease-out infinite',
 		'fade-up': 'fade-up 0.5s ease-out forwards',
+	},
+	fontFamily: {
+		sans: ['Inria Sans', 'system-ui', 'sans-serif'],
+		serif: ['Cormorant Upright', 'Georgia', 'serif'],
 	},
 } satisfies Config['theme']

@@ -1,7 +1,7 @@
 import { json, type ActionFunctionArgs } from '@remix-run/node'
-import { OpenAIProvider } from '#app/utils/providers/openai.server'
-import { prisma } from '#app/utils/db.server'
 import { requireUserId } from '#app/utils/auth.server'
+import { prisma } from '#app/utils/db.server'
+import { OpenAIProvider } from '#app/utils/providers/openai.server'
 
 const openai = OpenAIProvider.client()
 

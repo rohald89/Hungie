@@ -1,45 +1,50 @@
+import { type Recipe } from '@prisma/client'
 import { type Recipe as AIRecipe } from '#app/utils/ai.server'
 import { cn } from '#app/utils/misc.js'
 import { useFetcher } from '@remix-run/react'
 import { useEffect } from 'react'
 
-type DatabaseRecipe = {
-	id: string
-	title: string
-	cookingTime: number
-	difficulty: string
-	ingredients: Array<{ item: string; amount: string }>
-	nutritionalInfo: {
-		calories: number
-		protein: number
-		carbs: number
-		fat: number
-	}
+type RecipeWithRelations = Recipe & {
+	ingredients: Array<{
+		item: string
+		amount: string
+	}>
 	image?: { id: string } | null
+	instructions: string[]
 }
 
 export function RecipeCard({
 	recipe,
 	size = 'md',
 }: {
-	recipe: DatabaseRecipe
+	recipe: RecipeWithRelations | AIRecipe
 	size?: 'sm' | 'md'
 }) {
 	const imageFetcher = useFetcher<{ imageUrl: string }>()
 
 	useEffect(() => {
-		if (!('image' in recipe) && recipe.id) {
+		if ('id' in recipe && !('image' in recipe)) {
 			imageFetcher.submit(
 				{ recipeId: recipe.id, title: recipe.title },
 				{ method: 'POST', action: '/resources/generate-recipe-image' },
 			)
 		}
-	}, [recipe.id])
+	}, [recipe])
 
 	const imageUrl =
 		'image' in recipe && recipe.image?.id
 			? `/resources/recipe-images/${recipe.image.id}`
 			: imageFetcher.data?.imageUrl
+
+	const nutritionalInfo =
+		'nutritionalInfo' in recipe
+			? recipe.nutritionalInfo
+			: {
+					calories: recipe.calories,
+					protein: recipe.protein,
+					carbs: recipe.carbs,
+					fat: recipe.fat,
+				}
 
 	return (
 		<div
@@ -89,11 +94,11 @@ export function RecipeCard({
 			<div className="grid grid-cols-2 gap-4 text-sm">
 				<div>
 					<div className="text-muted-foreground">Calories</div>
-					<div className="font-medium">{recipe.nutritionalInfo.calories}</div>
+					<div className="font-medium">{nutritionalInfo.calories}</div>
 				</div>
 				<div>
 					<div className="text-muted-foreground">Protein</div>
-					<div className="font-medium">{recipe.nutritionalInfo.protein}g</div>
+					<div className="font-medium">{nutritionalInfo.protein}g</div>
 				</div>
 			</div>
 		</div>

@@ -2,8 +2,8 @@ import { json, type LoaderFunctionArgs } from '@remix-run/node'
 import { Link, useLoaderData, useSearchParams } from '@remix-run/react'
 import { RecipeCard } from '#app/components/recipe-card'
 import { SearchBar } from '#app/components/search-bar'
-import { prisma } from '#app/utils/db.server'
 import { requireUserId } from '#app/utils/auth.server'
+import { prisma } from '#app/utils/db.server'
 
 const RECIPES_PER_PAGE = 6
 

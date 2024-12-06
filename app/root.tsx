@@ -53,9 +53,22 @@ import { type Theme, getTheme } from './utils/theme.server.ts'
 import { makeTimings, time } from './utils/timing.server.ts'
 import { getToast } from './utils/toast.server.ts'
 import { useOptionalUser, useUser } from './utils/user.ts'
+import { PanelContent } from './components/PanelContent.tsx'
 
 export const links: LinksFunction = () => {
 	return [
+		{
+			rel: 'preconnect',
+			href: 'https://fonts.googleapis.com',
+		},
+		{
+			rel: 'preconnect',
+			href: 'https://fonts.gstatic.com',
+		},
+		{
+			rel: 'stylesheet',
+			href: 'https://fonts.googleapis.com/css2?family=Cormorant+Upright:wght@400;500;600;700&family=Inria+Sans:wght@400;700&display=swap',
+		},
 		// Preload svg sprite as a resource to avoid render blocking
 		{ rel: 'preload', href: iconsHref, as: 'image' },
 		{
@@ -170,7 +183,10 @@ function Document({
 				<ClientHintCheck nonce={nonce} />
 				<Meta />
 				<meta charSet="utf-8" />
-				<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1" />
+				<meta
+					name="viewport"
+					content="width=device-width,initial-scale=1,maximum-scale=1"
+				/>
 				{allowIndexing ? null : (
 					<meta name="robots" content="noindex, nofollow" />
 				)}
@@ -205,16 +221,51 @@ export function Layout({ children }: { children: React.ReactNode }) {
 
 function App() {
 	const data = useLoaderData<typeof loader>()
-	const user = useOptionalUser()
+	// const user = useOptionalUser()
 	const theme = useTheme()
-	const matches = useMatches()
-	const isOnSearchPage = matches.find((m) => m.id === 'routes/users+/index')
-	const searchBar = isOnSearchPage ? null : <SearchBar status="idle" />
+	// const matches = useMatches()
+	// const isOnSearchPage = matches.find((m) => m.id === 'routes/users+/index')
+	// const searchBar = isOnSearchPage ? null : <SearchBar status="idle" />
 	useToast(data.toast)
 
 	return (
 		<>
-			<div className="flex h-screen flex-col justify-between">
+			<div className="flex min-h-screen">
+				{/* Left Section */}
+				<div className="flex w-2/5 flex-col p-8">
+					<header className="mb-auto space-y-2">
+						<Logo />
+						<Slogan />
+					</header>
+
+					<main className="flex-grow">
+						<Outlet />
+					</main>
+
+					<footer className="mt-auto text-muted-foreground">
+						<nav>
+							<ul className="flex gap-4">
+								<li>
+									<Link to="/careers">Careers</Link>
+								</li>
+								<li>
+									<Link to="/privacy">Privacy</Link>
+								</li>
+								<li>
+									<Link to="/terms">Terms</Link>
+								</li>
+							</ul>
+						</nav>
+					</footer>
+				</div>
+
+				{/* Right Panel */}
+				<div className="w-3/5">
+					<PanelContent />
+				</div>
+			</div>
+
+			{/* <div className="flex h-screen flex-col justify-between">
 				<header className="container py-6">
 					<nav className="flex flex-wrap items-center justify-between gap-4 sm:flex-nowrap md:gap-8">
 						<Logo />
@@ -242,7 +293,7 @@ function App() {
 					<Logo />
 					<ThemeSwitch userPreference={data.requestInfo.userPrefs.theme} />
 				</div>
-			</div>
+			</div> */}
 			<EpicToaster closeButton position="top-center" theme={theme} />
 			<EpicProgress />
 		</>
@@ -251,14 +302,17 @@ function App() {
 
 function Logo() {
 	return (
-		<Link to="/" className="group grid leading-snug">
-			<span className="font-light transition group-hover:-translate-x-1">
-				Recipe
-			</span>
-			<span className="font-bold transition group-hover:translate-x-1">
-				Radar
-			</span>
+		<Link to="/" className="inline-block">
+			<h1 className="font-serif text-mega text-muted-foreground">Hungie</h1>
 		</Link>
+	)
+}
+
+function Slogan() {
+	return (
+		<p className="bg-gradient-to-r from-[#00C6C6] to-[#7688D2] bg-clip-text font-sans text-h6 text-transparent">
+			Can't decide what to cook? Try our AI.
+		</p>
 	)
 }
 
@@ -273,66 +327,66 @@ function AppWithProviders() {
 
 export default withSentry(AppWithProviders)
 
-function UserDropdown() {
-	const user = useUser()
-	const submit = useSubmit()
-	const formRef = useRef<HTMLFormElement>(null)
-	return (
-		<DropdownMenu>
-			<DropdownMenuTrigger asChild>
-				<Button asChild variant="secondary">
-					<Link
-						to={`/users/${user.username}`}
-						// this is for progressive enhancement
-						onClick={(e) => e.preventDefault()}
-						className="flex items-center gap-2"
-					>
-						<img
-							className="h-8 w-8 rounded-full object-cover"
-							alt={user.name ?? user.username}
-							src={getUserImgSrc(user.image?.id)}
-						/>
-						<span className="text-body-sm font-bold">
-							{user.name ?? user.username}
-						</span>
-					</Link>
-				</Button>
-			</DropdownMenuTrigger>
-			<DropdownMenuPortal>
-				<DropdownMenuContent sideOffset={8} align="start">
-					<DropdownMenuItem asChild>
-						<Link prefetch="intent" to={`/users/${user.username}`}>
-							<Icon className="text-body-md" name="avatar">
-								Profile
-							</Icon>
-						</Link>
-					</DropdownMenuItem>
-					<DropdownMenuItem asChild>
-						<Link prefetch="intent" to={`/users/${user.username}/notes`}>
-							<Icon className="text-body-md" name="pencil-2">
-								Notes
-							</Icon>
-						</Link>
-					</DropdownMenuItem>
-					<DropdownMenuItem
-						asChild
-						// this prevents the menu from closing before the form submission is completed
-						onSelect={(event) => {
-							event.preventDefault()
-							submit(formRef.current)
-						}}
-					>
-						<Form action="/logout" method="POST" ref={formRef}>
-							<Icon className="text-body-md" name="exit">
-								<button type="submit">Logout</button>
-							</Icon>
-						</Form>
-					</DropdownMenuItem>
-				</DropdownMenuContent>
-			</DropdownMenuPortal>
-		</DropdownMenu>
-	)
-}
+// function UserDropdown() {
+// 	const user = useUser()
+// 	const submit = useSubmit()
+// 	const formRef = useRef<HTMLFormElement>(null)
+// 	return (
+// 		<DropdownMenu>
+// 			<DropdownMenuTrigger asChild>
+// 				<Button asChild variant="secondary">
+// 					<Link
+// 						to={`/users/${user.username}`}
+// 						// this is for progressive enhancement
+// 						onClick={(e) => e.preventDefault()}
+// 						className="flex items-center gap-2"
+// 					>
+// 						<img
+// 							className="h-8 w-8 rounded-full object-cover"
+// 							alt={user.name ?? user.username}
+// 							src={getUserImgSrc(user.image?.id)}
+// 						/>
+// 						<span className="text-body-sm font-bold">
+// 							{user.name ?? user.username}
+// 						</span>
+// 					</Link>
+// 				</Button>
+// 			</DropdownMenuTrigger>
+// 			<DropdownMenuPortal>
+// 				<DropdownMenuContent sideOffset={8} align="start">
+// 					<DropdownMenuItem asChild>
+// 						<Link prefetch="intent" to={`/users/${user.username}`}>
+// 							<Icon className="text-body-md" name="avatar">
+// 								Profile
+// 							</Icon>
+// 						</Link>
+// 					</DropdownMenuItem>
+// 					<DropdownMenuItem asChild>
+// 						<Link prefetch="intent" to={`/users/${user.username}/notes`}>
+// 							<Icon className="text-body-md" name="pencil-2">
+// 								Notes
+// 							</Icon>
+// 						</Link>
+// 					</DropdownMenuItem>
+// 					<DropdownMenuItem
+// 						asChild
+// 						// this prevents the menu from closing before the form submission is completed
+// 						onSelect={(event) => {
+// 							event.preventDefault()
+// 							submit(formRef.current)
+// 						}}
+// 					>
+// 						<Form action="/logout" method="POST" ref={formRef}>
+// 							<Icon className="text-body-md" name="exit">
+// 								<button type="submit">Logout</button>
+// 							</Icon>
+// 						</Form>
+// 					</DropdownMenuItem>
+// 				</DropdownMenuContent>
+// 			</DropdownMenuPortal>
+// 		</DropdownMenu>
+// 	)
+// }
 
 // this is a last resort error boundary. There's not much useful information we
 // can offer at this level.
