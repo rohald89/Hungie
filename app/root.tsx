@@ -242,7 +242,7 @@ function App() {
 						<Outlet />
 					</main>
 
-					<footer className="mt-auto text-muted-foreground">
+					<footer className="mt-auto text-body-md font-bold text-muted-foreground">
 						<nav>
 							<ul className="flex gap-4">
 								<li>

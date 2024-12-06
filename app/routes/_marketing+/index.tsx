@@ -29,9 +29,11 @@ export default function Index() {
 			</ol>
 			<div className="mt-16 flex gap-4">
 				<Button asChild>
-					<Link to="/camera">Open Camera</Link>
+					<Link to="/scan">Open Camera</Link>
 				</Button>
-				<Button variant="secondary">Login</Button>
+				<Button asChild variant="secondary">
+					<Link to="/login">Login</Link>
+				</Button>
 			</div>
 		</main>
 	)
