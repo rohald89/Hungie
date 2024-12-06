@@ -1,5 +1,6 @@
 import { z } from 'zod'
 import { OpenAIProvider } from './providers/openai.server.ts'
+import { ChatCompletionMessageParam } from 'openai/resources/index.mjs'
 
 const openai = OpenAIProvider.client()
 
@@ -39,40 +40,88 @@ const RecipeResponseSchema = z.object({
 export type Recipe = z.infer<typeof RecipeSchema>
 export type RecipeResponse = z.infer<typeof RecipeResponseSchema>
 
-export async function analyzeFridgeContents(imageUrl: string) {
+export const IngredientsSchema = z.object({
+	dairy: z.array(z.string()),
+	meat: z.array(z.string()),
+	beverages: z.array(z.string()),
+	produce: z.array(z.string()),
+	condiments: z.array(z.string()),
+	packaged: z.array(z.string()),
+})
+
+export type Ingredients = z.infer<typeof IngredientsSchema>
+
+type OpenAIMessage = {
+	role: 'system' | 'user' | 'assistant'
+	content: string | Array<{ type: string; text?: string; image_url?: { url: string } }>
+}
+
+export async function analyzeFridgeContents(imageUrls: Array<string>) {
+	const messages: Array<OpenAIMessage> = [
+		{
+			role: 'system',
+			content: `You are a helpful kitchen assistant that identifies ingredients in a fridge or pantry.
+            If the images are empty, completely unclear, or contain no food-related items, respond with "NO_INGREDIENTS_FOUND".
+            Otherwise, return a JSON object with the following categories as arrays:
+            {
+                "dairy": ["milk", "yogurt", "cheese"],
+                "meat": ["beef", "chicken", "pork"],
+                "beverages": ["juice", "soda", "water"],
+                "produce": ["lettuce", "tomatoes", "carrots"],
+                "condiments": ["mayonnaise", "mustard", "ketchup"],
+                "packaged": ["bread", "cereal", "pasta"]
+            }
+
+            Guidelines:
+            - You MUST identify at least 2-3 items for each category! returning less items for a category will result in a failure
+            - If a category seems empty, make educated guesses based on:
+              - Partially visible items
+              - Common items typically stored together
+              - Shapes and containers that suggest certain foods
+              - Common kitchen staples for that category
+            - If uncertain about a specific item, list it as what it most likely is based on:
+              - Container shape/size
+              - Storage location
+              - Color and appearance
+              - Common household patterns
+            - Use lowercase for all items
+            - Keep descriptions simple and direct
+            - Group similar items (e.g., if you see multiple cheeses, list as "cheese")
+            - For packaged items, focus on the main content rather than the brand
+            - Place items in their most commonly associated category
+            - Prioritize accuracy while ensuring each category has meaningful suggestions
+
+            Remember: The goal is to provide a comprehensive and useful inventory while maintaining reasonable accuracy. Make informed assumptions when necessary to ensure 2-3 items per category.`
+		},
+	]
+
+	imageUrls.forEach((url, index) => {
+		messages.push({
+			role: 'user',
+			content: [
+				{
+					type: 'text',
+					text: `What ingredients can you identify in image ${index + 1}?`,
+				},
+				{
+					type: 'image_url',
+					image_url: { url },
+				},
+			],
+		} as const)
+	})
+
 	const completion = await openai.chat.completions.create({
 		model: 'gpt-4o',
-		messages: [
-			{
-				role: 'system',
-				content: `You are a kitchen assistant that identifies ingredients in a fridge or pantry.
-					If the image is empty, unclear, or doesn't contain food items, respond with "NO_INGREDIENTS_FOUND".
-					Otherwise, list all visible food items and ingredients, categorized by type (produce, dairy, meat, etc).
-					Only include items that are clearly visible and identifiable.`,
-			},
-			{
-				role: 'user',
-				content: [
-					{
-						type: 'text',
-						text: 'What ingredients can you identify in this image? Group them by category.',
-					},
-					{
-						type: 'image_url',
-						image_url: {
-							url: imageUrl,
-						},
-					},
-				],
-			},
-		],
+		messages: messages as ChatCompletionMessageParam[],
 		max_tokens: 500,
+		response_format: { type: 'json_object' },
 	})
 
 	const content = completion.choices[0]?.message.content ?? ''
-	return content === 'NO_INGREDIENTS_FOUND' ? null : content
+	console.log('content', content)
+	return content === 'NO_INGREDIENTS_FOUND' ? null : JSON.parse(content)
 }
-
 
 export async function generateRecipes(ingredients: string) {
 	const completion = await openai.chat.completions.create({
@@ -124,7 +173,7 @@ export async function generateRecipes(ingredients: string) {
 }
 
 export async function analyzeImage(imageUrl: string) {
-	const ingredients = await analyzeFridgeContents(imageUrl)
+	const ingredients = await analyzeFridgeContents([imageUrl])
 	if (!ingredients) {
 		throw new Error('No ingredients were detected in the image. Please try again with a clearer photo of food items')
 	}
