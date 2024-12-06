@@ -1,8 +1,10 @@
 import { json, type LoaderFunctionArgs } from '@remix-run/node'
-import { useLoaderData, useRouteLoaderData } from '@remix-run/react'
+import { useRouteLoaderData } from '@remix-run/react'
+import { PanelWrapper } from '#app/components/panel-wrapper.js'
+import { Icon } from '#app/components/ui/icon'
+import { type Ingredients } from '#app/utils/ai.server'
 import { requireUserId } from '#app/utils/auth.server'
 import { prisma } from '#app/utils/db.server'
-import { type Ingredients } from '#app/utils/ai.server'
 
 export async function loader({ request, params }: LoaderFunctionArgs) {
 	const userId = await requireUserId(request)
@@ -31,23 +33,31 @@ function IngredientsPanel() {
 	if (!data) return null
 
 	return (
-		<main className="mt-40">
-			<h1 className="text-h1">Detected Ingredients</h1>
-			<div className="mt-8 grid grid-cols-2 gap-8 md:grid-cols-3">
+		<PanelWrapper>
+			<h3 className="mt-4 text-center text-h6 text-muted-foreground">
+				Item Checklist
+			</h3>
+			<div className="mt-8 grid grid-cols-2 gap-8">
 				{Object.entries(data.ingredients).map(([category, items]) => (
 					<div key={category} className="space-y-4">
 						<h2 className="text-h4 capitalize">{category}</h2>
-						<ul className="space-y-2">
+						<ul className="space-y-4">
 							{items.map((item) => (
-								<li key={item} className="text-body-md">
-									{item}
+								<li key={item} className="flex items-center gap-2">
+									<div className="flex h-6 w-6 flex-none items-center justify-center rounded-full bg-blue-50">
+										<Icon
+											name="check2"
+											className="h-4 w-4 translate-x-1/2 text-blue-900"
+										/>
+									</div>
+									<span className="text-body-md">{item}</span>
 								</li>
 							))}
 						</ul>
 					</div>
 				))}
 			</div>
-		</main>
+		</PanelWrapper>
 	)
 }
 
@@ -58,7 +68,7 @@ export const handle = {
 export default function ScanDetailsRoute() {
 	return (
 		<main className="mt-40">
-			<p className="text-mega">🛒</p>
+			<p className="text-h2">🛒</p>
 			<h2 className="mt-5 text-h6 text-muted-foreground">Step 1</h2>
 			<p className="mt-4 text-body-md">
 				Capture or upload a maximum of five (5) photos of your food items.

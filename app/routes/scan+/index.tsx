@@ -14,7 +14,7 @@ import {
 	type ActionFunctionArgs,
 	redirect,
 } from '@remix-run/node'
-import { Form, useActionData } from '@remix-run/react'
+import { Form, useActionData, useNavigation } from '@remix-run/react'
 import { useState, useEffect, useRef, useCallback } from 'react'
 import { z } from 'zod'
 import { ErrorList } from '#app/components/forms'
@@ -23,10 +23,11 @@ import { Icon } from '#app/components/ui/icon'
 import { StatusButton } from '#app/components/ui/status-button'
 import { requireUserId } from '#app/utils/auth.server'
 import { analyzeFridgeContents } from '#app/utils/ai.server'
-import { cn, useIsPending } from '#app/utils/misc'
+import { cn } from '#app/utils/misc'
 import { prisma } from '#app/utils/db.server'
 import { createId } from '@paralleldrive/cuid2'
 import Webcam from 'react-webcam'
+import { PanelWrapper } from '#app/components/panel-wrapper.js'
 
 const MAX_UPLOAD_SIZE = 1024 * 1024 * 3 // 3MB
 
@@ -55,7 +56,7 @@ const ScanFormSchema = z.object({
 export default function ScanRoute() {
 	return (
 		<main className="mt-40">
-			<p className="text-mega">🛒</p>
+			<p className="text-h2">🛒</p>
 			<h2 className="mt-5 text-h6 text-muted-foreground">Step 1</h2>
 			<p className="mt-4 text-body-md">
 				Capture or upload a maximum of five (5) photos of your food items.
@@ -69,7 +70,9 @@ export default function ScanRoute() {
 
 function ScanPanel() {
 	const actionData = useActionData<typeof action>()
-	const isPending = useIsPending()
+	const navigation = useNavigation()
+	const isPending =
+		navigation.state === 'submitting' || navigation.state === 'loading'
 	const webcamRef = useRef<Webcam>(null)
 	const [showCamera, setShowCamera] = useState(false)
 
@@ -81,7 +84,7 @@ function ScanPanel() {
 			return parseWithZod(formData, { schema: ScanFormSchema })
 		},
 		defaultValue: {
-			images: [{}],
+			images: [{ id: createId() }],
 		},
 		shouldRevalidate: 'onBlur',
 	})
@@ -96,7 +99,10 @@ function ScanPanel() {
 		const canAddMore = imageList.length < 5
 
 		if (!hasEmptySlot && canAddMore) {
-			form.insert({ name: fields.images.name })
+			form.insert({
+				name: fields.images.name,
+				defaultValue: { id: createId() },
+			})
 		}
 	}, [imageList, fields.images.name, form])
 
@@ -137,7 +143,10 @@ function ScanPanel() {
 
 				// Add a new empty ImageChooser if we're at the last slot
 				if (emptyIndex === imageList.length - 1 && imageList.length < 5) {
-					form.insert({ name: fields.images.name })
+					form.insert({
+						name: fields.images.name,
+						defaultValue: { id: createId() },
+					})
 				}
 			}
 		}
@@ -146,8 +155,13 @@ function ScanPanel() {
 	}, [form, fields.images.name, imageList])
 
 	return (
-		<div className="h-full px-24 py-20">
-			<div className="h-full rounded-2xl border border-[#D9D9D9] p-8">
+		<PanelWrapper>
+			<h3 className="mt-4 text-center text-h6 uppercase text-muted-foreground">
+				Camera
+			</h3>
+			{isPending ? (
+				<AnalyzingImages />
+			) : (
 				<div className="mb-8">
 					{showCamera ? (
 						<div className="relative mx-auto w-full max-w-2xl">
@@ -177,45 +191,45 @@ function ScanPanel() {
 						</Button>
 					)}
 				</div>
+			)}
 
-				<FormProvider context={form.context}>
-					<Form
-						method="POST"
-						action="/scan"
-						className="flex h-full flex-col gap-y-4"
-						{...getFormProps(form)}
-						encType="multipart/form-data"
-					>
-						<div className="flex flex-wrap gap-4">
-							{imageList.map((image, index) => (
-								<ImageChooser
-									key={image.key}
-									meta={image}
-									onRemove={() =>
-										form.remove({
-											name: fields.images.name,
-											index,
-										})
-									}
-								/>
-							))}
-						</div>
-						<ErrorList id={form.errorId} errors={form.errors} />
-						{imageList.some((image) => image.getFieldset().file.value) && (
-							<StatusButton
-								type="submit"
-								disabled={isPending}
-								status={isPending ? 'pending' : 'idle'}
-								className="mt-4"
-							>
-								<Icon name="check" className="mr-2" />
-								Analyze Images
-							</StatusButton>
-						)}
-					</Form>
-				</FormProvider>
-			</div>
-		</div>
+			<FormProvider context={form.context}>
+				<Form
+					method="POST"
+					action="/scan"
+					className="flex h-full flex-col gap-y-4"
+					{...getFormProps(form)}
+					encType="multipart/form-data"
+				>
+					<div className="flex flex-wrap gap-4">
+						{imageList.map((image, index) => (
+							<ImageChooser
+								key={image.key ?? index}
+								meta={image}
+								onRemove={() =>
+									form.remove({
+										name: fields.images.name,
+										index,
+									})
+								}
+							/>
+						))}
+					</div>
+					<ErrorList id={form.errorId} errors={form.errors} />
+					{imageList.some((image) => image.getFieldset().file.value) && (
+						<StatusButton
+							type="submit"
+							disabled={isPending}
+							status={isPending ? 'pending' : 'idle'}
+							className="mt-4"
+						>
+							<Icon name="check" className="mr-2" />
+							Analyze Images
+						</StatusButton>
+					)}
+				</Form>
+			</FormProvider>
+		</PanelWrapper>
 	)
 }
 
@@ -228,6 +242,11 @@ function ImageChooser({
 }) {
 	const fields = meta.getFieldset()
 	const [previewImage, setPreviewImage] = useState<string | null>(null)
+
+	// Get input props but exclude the key
+	const { key: _key, ...inputProps } = getInputProps(fields.file, {
+		type: 'file',
+	})
 
 	return (
 		<fieldset {...getFieldsetProps(meta)}>
@@ -281,7 +300,7 @@ function ImageChooser({
 							}
 						}}
 						accept="image/*"
-						{...getInputProps(fields.file, { type: 'file' })}
+						{...inputProps}
 					/>
 				</label>
 				<div className="min-h-[32px] px-4 pb-3 pt-1">
@@ -289,6 +308,14 @@ function ImageChooser({
 				</div>
 			</div>
 		</fieldset>
+	)
+}
+
+function AnalyzingImages() {
+	return (
+		<div className="flex h-full items-center justify-center">
+			<p className="text-h6">Analyzing images...</p>
+		</div>
 	)
 }
 
@@ -350,9 +377,6 @@ export async function action({ request }: ActionFunctionArgs) {
 			id: true,
 		},
 	})
-
-	// Add right after scan creation
-	console.log('Created scan:', scan)
 
 	// Redirect to the scan detail page
 	return redirect(`/scan/${scan.id}`)
