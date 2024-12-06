@@ -15,7 +15,7 @@ import {
 	redirect,
 } from '@remix-run/node'
 import { Form, useActionData } from '@remix-run/react'
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef, useCallback } from 'react'
 import { z } from 'zod'
 import { ErrorList } from '#app/components/forms'
 import { Button } from '#app/components/ui/button'
@@ -26,6 +26,7 @@ import { analyzeFridgeContents } from '#app/utils/ai.server'
 import { cn, useIsPending } from '#app/utils/misc'
 import { prisma } from '#app/utils/db.server'
 import { createId } from '@paralleldrive/cuid2'
+import Webcam from 'react-webcam'
 
 const MAX_UPLOAD_SIZE = 1024 * 1024 * 3 // 3MB
 
@@ -69,6 +70,8 @@ export default function ScanRoute() {
 function ScanPanel() {
 	const actionData = useActionData<typeof action>()
 	const isPending = useIsPending()
+	const webcamRef = useRef<Webcam>(null)
+	const [showCamera, setShowCamera] = useState(false)
 
 	const [form, fields] = useForm({
 		id: 'scan-form',
@@ -97,9 +100,84 @@ function ScanPanel() {
 		}
 	}, [imageList, fields.images.name, form])
 
+	const capture = useCallback(() => {
+		if (!webcamRef.current) return
+		const imageSrc = webcamRef.current.getScreenshot()
+		if (!imageSrc) {
+			console.log('No image captured')
+			return
+		}
+		console.log('Image captured:', imageSrc.substring(0, 50) + '...')
+
+		// Convert base64 to File object
+		const blob = dataURLtoFile(imageSrc, 'webcam-photo.jpg')
+		console.log('Converted to blob:', blob)
+
+		// Find first empty slot
+		const emptyIndex = imageList.findIndex(
+			(image) => !image.getFieldset().file.value,
+		)
+		console.log('Empty index:', emptyIndex)
+
+		if (emptyIndex !== -1) {
+			// Get the field
+			const imageField = imageList[emptyIndex]?.getFieldset().file
+			const fieldId = imageField?.id
+			if (!fieldId) return
+
+			// Update the file input directly
+			const dataTransfer = new DataTransfer()
+			dataTransfer.items.add(blob)
+
+			const input = document.getElementById(fieldId) as HTMLInputElement
+			if (input) {
+				input.files = dataTransfer.files
+				// Trigger change event
+				input.dispatchEvent(new Event('change', { bubbles: true }))
+
+				// Add a new empty ImageChooser if we're at the last slot
+				if (emptyIndex === imageList.length - 1 && imageList.length < 5) {
+					form.insert({ name: fields.images.name })
+				}
+			}
+		}
+
+		setShowCamera(false)
+	}, [form, fields.images.name, imageList])
+
 	return (
 		<div className="h-full px-24 py-20">
 			<div className="h-full rounded-2xl border border-[#D9D9D9] p-8">
+				<div className="mb-8">
+					{showCamera ? (
+						<div className="relative mx-auto w-full max-w-2xl">
+							<Webcam
+								ref={webcamRef}
+								screenshotFormat="image/jpeg"
+								className="w-full rounded-lg"
+							/>
+							<div className="absolute bottom-4 left-1/2 flex -translate-x-1/2 gap-4">
+								<Button onClick={capture} className="bg-primary text-white">
+									<Icon name="camera" className="mr-2" />
+									Capture
+								</Button>
+								<Button onClick={() => setShowCamera(false)} variant="outline">
+									Cancel
+								</Button>
+							</div>
+						</div>
+					) : (
+						<Button
+							onClick={() => setShowCamera(true)}
+							className="mb-4"
+							disabled={imageList.length >= 5}
+						>
+							<Icon name="camera" className="mr-2" />
+							Take Photo
+						</Button>
+					)}
+				</div>
+
 				<FormProvider context={form.context}>
 					<Form
 						method="POST"
@@ -169,15 +247,15 @@ function ImageChooser({
 								alt={fields.altText.value ?? ''}
 								className="h-32 w-32 rounded-lg object-cover"
 							/>
-							<div className="absolute inset-0 flex items-center justify-center opacity-0 transition-opacity group-hover:opacity-100">
-								<div className="absolute inset-0 rounded-lg bg-black/50" />
+							<div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100">
+								<div className="absolute inset-0 rounded-lg bg-black/30 backdrop-blur-sm" />
 								<button
 									type="button"
 									onClick={(e) => {
 										e.preventDefault()
 										onRemove()
 									}}
-									className="relative z-10 text-white"
+									className="relative z-10 text-foreground"
 								>
 									<Icon name="trash2" className="h-12" />
 								</button>
@@ -284,4 +362,19 @@ function imageHasFile(
 	image: ImageFieldset,
 ): image is ImageFieldset & { file: NonNullable<ImageFieldset['file']> } {
 	return Boolean(image.file?.size && image.file?.size > 0)
+}
+// Helper function to convert dataURL to File
+function dataURLtoFile(dataurl: string, filename: string): File {
+	const arr = dataurl.split(',')
+	const mime = arr[0]?.match(/:(.*?);/)?.[1] ?? 'image/jpeg'
+	const bstr = atob(arr[1] ?? '')
+	let n = bstr.length
+	const u8arr = new Uint8Array(n)
+
+	while (n > 0) {
+		n--
+		u8arr[n] = bstr.charCodeAt(n)
+	}
+
+	return new File([u8arr], filename, { type: mime })
 }
