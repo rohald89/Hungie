@@ -1,10 +1,10 @@
 import { json, type LoaderFunctionArgs } from '@remix-run/node'
 import { Link, useRouteLoaderData } from '@remix-run/react'
 import { PanelWrapper } from '#app/components/panel-wrapper'
-import { requireUserId } from '#app/utils/auth.server'
-import { prisma } from '#app/utils/db.server'
 import { Button } from '#app/components/ui/button.js'
 import { Icon } from '#app/components/ui/icon.js'
+import { requireUserId } from '#app/utils/auth.server'
+import { prisma } from '#app/utils/db.server'
 
 export async function loader({ request, params }: LoaderFunctionArgs) {
 	const userId = await requireUserId(request)
@@ -42,7 +42,6 @@ function RecipesPanel() {
 		'routes/scan+/$scanId_+/recipes',
 	)
 
-	console.log('data', data)
 	return (
 		<PanelWrapper title="Recipes">
 			{!data?.scan?.recipes?.length ? (

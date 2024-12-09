@@ -18,7 +18,14 @@ export async function loader({ request, params }: LoaderFunctionArgs) {
 
 	const scan = await prisma.scan.findUnique({
 		where: { id: params.scanId },
-		select: { id: true, ingredients: true, userId: true },
+		select: {
+			id: true,
+			ingredients: true,
+			userId: true,
+			_count: {
+				select: { recipes: true },
+			},
+		},
 	})
 
 	if (!scan) {
@@ -31,7 +38,7 @@ export async function loader({ request, params }: LoaderFunctionArgs) {
 
 	const ingredients = JSON.parse(scan.ingredients) as Ingredients
 
-	return json({ ingredients })
+	return json({ ingredients, recipeCount: scan._count.recipes })
 }
 
 function IngredientsPanel() {
@@ -41,15 +48,24 @@ function IngredientsPanel() {
 	const navigate = useNavigate()
 
 	useEffect(() => {
-		if (recipeFetcher.data && !recipeFetcher.data.error) {
+		if (
+			recipeFetcher.data &&
+			typeof recipeFetcher.data === 'object' &&
+			!('error' in recipeFetcher.data)
+		) {
 			navigate(`/scan/${params.scanId}/recipes`)
 		}
-	}, [recipeFetcher.data, params.scanId])
+	}, [recipeFetcher.data, params.scanId, navigate])
 
 	if (!data) return null
 
 	const handleGenerateRecipes = () => {
 		if (!params.scanId) return
+
+		if (data.recipeCount > 0) {
+			navigate(`/scan/${params.scanId}/recipes`)
+			return
+		}
 
 		const ingredientsList = Object.entries(data.ingredients)
 			.map(([category, items]) => `${category}: ${items.join(', ')}`)
