@@ -6,6 +6,7 @@ import {
 	type MetaFunction,
 } from '@remix-run/node'
 import {
+	Form,
 	Link,
 	Links,
 	Meta,
@@ -212,6 +213,8 @@ function App() {
 
 	useToast(data.toast)
 
+	console.log(user)
+
 	return (
 		<>
 			<div className="flex h-screen gap-10 overflow-hidden">
@@ -244,13 +247,22 @@ function App() {
 									<>
 										<li className="flex items-center gap-4">
 											<div className="h-1 w-1 bg-muted-foreground" />
-											<Link to="/terms">Edit Profile</Link>
+											<Link to="/settings/profile">Edit Profile</Link>
 										</li>
 										<li className="flex items-center gap-4">
 											<div className="h-1 w-1 bg-muted-foreground" />
-											<Link to="/signout" className="text-destructive">
-												Sign Out
-											</Link>
+											<Form
+												action="/logout"
+												method="POST"
+												className="text-muted-foreground hover:text-foreground"
+											>
+												<button
+													type="submit"
+													className="text-destructive hover:text-foreground"
+												>
+													Sign out
+												</button>
+											</Form>
 										</li>
 									</>
 								) : null}
