@@ -39,6 +39,7 @@ import { type Theme, getTheme } from './utils/theme.server.ts'
 import { makeTimings, time } from './utils/timing.server.ts'
 import { getToast } from './utils/toast.server.ts'
 import { PanelContent } from './components/PanelContent.tsx'
+import { useOptionalUser } from './utils/user.ts'
 
 export const links: LinksFunction = () => {
 	return [
@@ -206,11 +207,9 @@ export function Layout({ children }: { children: React.ReactNode }) {
 
 function App() {
 	const data = useLoaderData<typeof loader>()
-	// const user = useOptionalUser()
+	const user = useOptionalUser()
 	const theme = useTheme()
-	// const matches = useMatches()
-	// const isOnSearchPage = matches.find((m) => m.id === 'routes/users+/index')
-	// const searchBar = isOnSearchPage ? null : <SearchBar status="idle" />
+
 	useToast(data.toast)
 
 	return (
@@ -241,6 +240,20 @@ function App() {
 									<div className="h-1 w-1 bg-muted-foreground" />
 									<Link to="/terms">Terms</Link>
 								</li>
+								{user ? (
+									<>
+										<li className="flex items-center gap-4">
+											<div className="h-1 w-1 bg-muted-foreground" />
+											<Link to="/terms">Edit Profile</Link>
+										</li>
+										<li className="flex items-center gap-4">
+											<div className="h-1 w-1 bg-muted-foreground" />
+											<Link to="/signout" className="text-destructive">
+												Sign Out
+											</Link>
+										</li>
+									</>
+								) : null}
 							</ul>
 						</nav>
 					</footer>
