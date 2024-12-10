@@ -1,9 +1,8 @@
 import { json, type LoaderFunctionArgs } from '@remix-run/node'
-import { Link, useRouteLoaderData, useSearchParams } from '@remix-run/react'
+import { useRouteLoaderData, useSearchParams } from '@remix-run/react'
 import { PanelWrapper } from '#app/components/panel-wrapper.js'
 import { RecipeCard } from '#app/components/recipe-card.js'
 import { SearchBar } from '#app/components/search-bar.js'
-import { Button } from '#app/components/ui/button.js'
 import { getUserId } from '#app/utils/auth.server.js'
 import { prisma } from '#app/utils/db.server.js'
 
@@ -42,7 +41,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
 	return json({
 		recipes: recipes.map((recipe) => ({
 			...recipe,
-			isFavorited: recipe.favorites?.length > 0 ?? false,
+			isFavorited: recipe.favorites?.length > 0,
 			favorites: undefined,
 		})),
 		status: 'idle' as const,
