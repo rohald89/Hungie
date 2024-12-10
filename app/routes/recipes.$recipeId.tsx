@@ -48,7 +48,7 @@ export async function loader({ request, params }: LoaderFunctionArgs) {
 		recipe: {
 			...recipe,
 			instructions: JSON.parse(recipe.instructions) as Array<string>,
-			isFavorited: recipe.favorites?.length > 0 ?? false,
+			isFavorited: recipe.favorites?.length > 0,
 			favorites: undefined,
 		},
 	})
