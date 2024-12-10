@@ -1,11 +1,14 @@
 import { json, type LoaderFunctionArgs } from '@remix-run/node'
 import { useFetcher, useNavigate, useRouteLoaderData } from '@remix-run/react'
-import { useEffect } from 'react'
+import { useCallback } from 'react'
 import { PanelWrapper } from '#app/components/panel-wrapper.js'
 import { Icon } from '#app/components/ui/icon.js'
+import { getUserId } from '#app/utils/auth.server'
 import { prisma } from '#app/utils/db.server'
+import { useOptionalUser } from '#app/utils/user'
 
 export async function loader({ request, params }: LoaderFunctionArgs) {
+	const userId = await getUserId(request)
 	const recipe = await prisma.recipe.findUnique({
 		where: { id: params.recipeId },
 		select: {
@@ -26,11 +29,12 @@ export async function loader({ request, params }: LoaderFunctionArgs) {
 					contentType: true,
 				},
 			},
-			scan: {
-				select: {
-					userId: true,
-				},
-			},
+			favorites: userId
+				? {
+						where: { userId },
+						select: { id: true },
+					}
+				: undefined,
 		},
 	})
 
@@ -42,30 +46,35 @@ export async function loader({ request, params }: LoaderFunctionArgs) {
 		recipe: {
 			...recipe,
 			instructions: JSON.parse(recipe.instructions) as Array<string>,
+			isFavorited: recipe.favorites?.length > 0 ?? false,
+			favorites: undefined,
 		},
 	})
 }
 
 function RecipePanel() {
 	const navigate = useNavigate()
-	const imageFetcher = useFetcher<{ imageUrl: string }>()
+	const user = useOptionalUser()
+	const favoriteFetcher = useFetcher<{ isFavorited: boolean }>()
 	const data = useRouteLoaderData<typeof loader>('routes/recipes.$recipeId')
 
-	useEffect(() => {
-		if (data?.recipe && !data.recipe.image) {
-			imageFetcher.submit(
-				{ recipeId: data.recipe.id, title: data.recipe.title },
-				{ method: 'POST', action: '/resources/generate-recipe-image' },
-			)
-		}
-	}, [data?.recipe, imageFetcher])
+	const handleFavorite = useCallback(() => {
+		if (!data?.recipe) return
+		favoriteFetcher.submit(
+			{ recipeId: data.recipe.id },
+			{ method: 'post', action: '/resources/favorite' },
+		)
+	}, [data?.recipe, favoriteFetcher])
 
 	if (!data) return null
 
 	const { recipe } = data
 	const imageUrl = recipe.image?.id
 		? `/resources/recipe-images/${recipe.image.id}`
-		: imageFetcher.data?.imageUrl
+		: null
+
+	const isFavorited =
+		favoriteFetcher.data?.isFavorited ?? recipe.isFavorited ?? false
 
 	return (
 		<PanelWrapper
@@ -76,16 +85,32 @@ function RecipePanel() {
 				onClick: () => navigate(-1),
 				ariaLabel: 'Navigate back',
 			}}
-			rightButton={{
-				icon: <Icon name="star" className="h-5 w-5" />,
-				className: 'bg-white hover:bg-white',
-				onClick: () => navigate(-1),
-				ariaLabel: 'Navigate back',
-			}}
+			rightButton={
+				user
+					? {
+							icon: (
+								<Icon
+									name="star"
+									className="h-5 w-5"
+									data-state={isFavorited ? 'favorited' : 'unfavorited'}
+									style={{
+										fill: isFavorited ? 'currentColor' : 'none',
+									}}
+								/>
+							),
+							className:
+								'bg-white hover:bg-white data-[state=favorited]:text-yellow-500 data-[state=unfavorited]:text-muted-foreground',
+							onClick: handleFavorite,
+							ariaLabel: isFavorited
+								? 'Remove from favorites'
+								: 'Add to favorites',
+						}
+					: undefined
+			}
 		>
 			<div className="space-y-8">
 				<div className="rounded-lg bg-muted">
-					{imageUrl && (
+					{imageUrl ? (
 						<div className="max-h-56 w-full">
 							<img
 								src={imageUrl}
@@ -93,7 +118,7 @@ function RecipePanel() {
 								className="max-h-56 w-full rounded-t-lg object-cover"
 							/>
 						</div>
-					)}
+					) : null}
 					<div className="flex items-center justify-center gap-10 py-8">
 						<p className="text-body-sm capitalize text-muted-foreground">
 							👨‍🍳 {recipe.difficulty.toLowerCase()}
