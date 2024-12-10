@@ -108,7 +108,7 @@ function RecipePanel() {
 								? 'Remove from favorites'
 								: 'Add to favorites',
 						}
-					: undefined
+					: false
 			}
 		>
 			<div className="space-y-8">
