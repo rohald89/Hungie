@@ -1,143 +1,64 @@
 import { json, type LoaderFunctionArgs } from '@remix-run/node'
-import {
-	Link,
-	useLoaderData,
-	useRouteLoaderData,
-	useSearchParams,
-} from '@remix-run/react'
-import { RecipeCard } from '#app/components/recipe-card'
-import { SearchBar } from '#app/components/search-bar'
-import { prisma } from '#app/utils/db.server'
+import { Link, useRouteLoaderData, useSearchParams } from '@remix-run/react'
+import { PanelWrapper } from '#app/components/panel-wrapper.js'
+import { RecipeCard } from '#app/components/recipe-card.js'
+import { SearchBar } from '#app/components/search-bar.js'
+import { Button } from '#app/components/ui/button.js'
+import { getUserId } from '#app/utils/auth.server.js'
+import { prisma } from '#app/utils/db.server.js'
 
-const RECIPES_PER_PAGE = 6
+export const meta = () => [{ title: 'Hungie' }]
 
 export async function loader({ request }: LoaderFunctionArgs) {
+	const userId = await getUserId(request)
 	const searchParams = new URL(request.url).searchParams
 	const query = searchParams.get('search')
-	const page = Number(searchParams.get('page') || '1')
-	const skip = (page - 1) * RECIPES_PER_PAGE
 
-	const [recipes, totalRecipes] = await Promise.all([
-		prisma.recipe.findMany({
-			where: query
+	const recipes = await prisma.recipe.findMany({
+		where: query
+			? {
+					OR: [
+						{ title: { contains: query } },
+						{ ingredients: { some: { item: { contains: query } } } },
+					],
+				}
+			: undefined,
+		select: {
+			id: true,
+			title: true,
+			difficulty: true,
+			cookingTime: true,
+			calories: true,
+			favorites: userId
 				? {
-						OR: [
-							{ title: { contains: query } },
-							{
-								ingredients: {
-									some: { item: { contains: query } },
-								},
-							},
-						],
+						where: { userId },
+						select: { id: true },
 					}
 				: undefined,
-			include: { ingredients: true, image: true },
-			orderBy: { createdAt: 'desc' },
-			take: RECIPES_PER_PAGE,
-			skip,
-		}),
-		prisma.recipe.count({
-			where: query
-				? {
-						OR: [
-							{ title: { contains: query } },
-							{
-								ingredients: {
-									some: { item: { contains: query } },
-								},
-							},
-						],
-					}
-				: undefined,
-		}),
-	])
-
-	const totalPages = Math.ceil(totalRecipes / RECIPES_PER_PAGE)
+		},
+		orderBy: { createdAt: 'desc' },
+	})
 
 	return json({
-		status: 'idle',
-		recipes,
-		pagination: {
-			currentPage: page,
-			totalPages,
-			hasNextPage: page < totalPages,
-			hasPrevPage: page > 1,
-		},
+		recipes: recipes.map((recipe) => ({
+			...recipe,
+			isFavorited: recipe.favorites?.length > 0 ?? false,
+			favorites: undefined,
+		})),
+		status: 'idle' as const,
 	})
 }
 
-export default function RecipesRoute() {
-	const { recipes, pagination } = useLoaderData<typeof loader>()
-	const [searchParams] = useSearchParams()
-	const query = searchParams.get('search')
-
-	if (!recipes.length) {
-		return (
-			<div className="container py-8">
-				<div className="flex justify-between">
-					<h1 className="text-3xl font-bold">All Recipes</h1>
-					<div className="w-1/3">
-						<SearchBar status="idle" autoSubmit />
-					</div>
-				</div>
-				<div className="mt-8 text-center text-muted-foreground">
-					<p>No recipes found.</p>
-					<p className="text-sm">
-						{query
-							? 'Try adjusting your search'
-							: 'No recipes have been added yet'}
-					</p>
-				</div>
-			</div>
-		)
-	}
-
+export default function Index() {
 	return (
-		<p>Awaiting Design</p>
-		// <div className="container py-8">
-		// 	<div className="flex flex-col gap-8">
-		// 		<div className="flex justify-between">
-		// 			<h1 className="text-3xl font-bold">All Recipes</h1>
-		// 			<div className="w-1/3">
-		// 				<SearchBar status="idle" autoSubmit />
-		// 			</div>
-		// 		</div>
-
-		// 		<div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-		// 			{recipes.map((recipe) => (
-		// 				<RecipeCard key={recipe.id} recipe={recipe} />
-		// 			))}
-		// 		</div>
-
-		// 		<div className="flex justify-center gap-2">
-		// 			{pagination.hasPrevPage ? (
-		// 				<Link
-		// 					to={`?${new URLSearchParams({
-		// 						...Object.fromEntries(searchParams),
-		// 						page: String(pagination.currentPage - 1),
-		// 					})}`}
-		// 					className="rounded-md bg-secondary px-4 py-2 text-secondary-foreground"
-		// 				>
-		// 					Previous
-		// 				</Link>
-		// 			) : null}
-		// 			<span className="flex items-center text-muted-foreground">
-		// 				Page {pagination.currentPage} of {pagination.totalPages}
-		// 			</span>
-		// 			{pagination.hasNextPage ? (
-		// 				<Link
-		// 					to={`?${new URLSearchParams({
-		// 						...Object.fromEntries(searchParams),
-		// 						page: String(pagination.currentPage + 1),
-		// 					})}`}
-		// 					className="rounded-md bg-secondary px-4 py-2 text-secondary-foreground"
-		// 				>
-		// 					Next
-		// 				</Link>
-		// 			) : null}
-		// 		</div>
-		// 	</div>
-		// </div>
+		<>
+			<p className="text-5xl">🍽️</p>
+			<h2 className="mt-5 text-h6 text-muted-foreground">Explore Recipes</h2>
+			<p className="mt-4 text-body-md">
+				See what others are making here on Hungie with our global list of
+				recipes!
+			</p>
+		</>
 	)
 }
 
@@ -147,15 +68,31 @@ export const handle = {
 
 function PanelContent() {
 	const data = useRouteLoaderData<typeof loader>('routes/recipes')
-	if (!data) return null
+	const [searchParams] = useSearchParams()
+	const query = searchParams.get('search')
 
 	return (
-		<div className="h-screen overflow-y-auto p-12">
-			<div className="grid gap-4">
-				{data.recipes.map((recipe) => (
-					<RecipeCard key={recipe.id} recipe={recipe} />
-				))}
+		<PanelWrapper title="Explore Recipes" rightButton={false}>
+			<div className="mb-8 w-full">
+				<SearchBar
+					autoSubmit
+					formAction="/recipes"
+					placeholder="Search recipes..."
+				/>
 			</div>
-		</div>
+			<div className="mt-8 flex flex-col gap-8 pb-10">
+				{data?.recipes.length === 0 ? (
+					<p className="text-center text-muted-foreground">
+						{query
+							? 'No recipes found. Try adjusting your search.'
+							: 'No recipes have been added yet.'}
+					</p>
+				) : (
+					data?.recipes.map((recipe) => (
+						<RecipeCard key={recipe.id} recipe={recipe} />
+					))
+				)}
+			</div>
+		</PanelWrapper>
 	)
 }

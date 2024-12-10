@@ -1,11 +1,11 @@
 import { json, type LoaderFunctionArgs } from '@remix-run/node'
-import { Link, useNavigate, useRouteLoaderData } from '@remix-run/react'
+import { useRouteLoaderData } from '@remix-run/react'
 import { PanelWrapper } from '#app/components/panel-wrapper'
+import { RecipeCard } from '#app/components/recipe-card.js'
 import { Button } from '#app/components/ui/button.js'
 import { Icon } from '#app/components/ui/icon.js'
 import { requireUserId } from '#app/utils/auth.server'
 import { prisma } from '#app/utils/db.server'
-import { RecipeCard } from '#app/components/recipe-card.js'
 
 export async function loader({ request, params }: LoaderFunctionArgs) {
 	const userId = await requireUserId(request)
@@ -22,6 +22,10 @@ export async function loader({ request, params }: LoaderFunctionArgs) {
 					difficulty: true,
 					cookingTime: true,
 					calories: true,
+					favorites: {
+						where: { userId },
+						select: { id: true },
+					},
 				},
 			},
 		},
@@ -35,7 +39,16 @@ export async function loader({ request, params }: LoaderFunctionArgs) {
 		throw new Response('Not found', { status: 404 })
 	}
 
-	return json({ scan })
+	return json({
+		scan: {
+			...scan,
+			recipes: scan.recipes.map(recipe => ({
+				...recipe,
+				isFavorited: recipe.favorites.length > 0,
+				favorites: undefined,
+			})),
+		},
+	})
 }
 
 function RecipesPanel() {

@@ -1,9 +1,16 @@
-import { type MetaFunction } from '@remix-run/node'
+import { redirect, type MetaFunction } from '@remix-run/node'
 import { Link } from '@remix-run/react'
 import { Button } from '#app/components/ui/button.js'
+import { getUserId } from '#app/utils/auth.server.js'
 import { useOptionalUser } from '#app/utils/user.js'
 
 export const meta: MetaFunction = () => [{ title: 'Hungie' }]
+
+export async function loader({ request }: { request: Request }) {
+	const user = await getUserId(request)
+	if (user) return redirect('/dashboard')
+	return null
+}
 
 const steps = [
 	'Take photo of your food items 🛒',
@@ -12,7 +19,6 @@ const steps = [
 ]
 
 export default function Index() {
-	const user = useOptionalUser()
 	return (
 		<>
 			<p className="text-5xl">📸</p>
@@ -33,11 +39,10 @@ export default function Index() {
 				<Button asChild>
 					<Link to="/scan">Open Camera</Link>
 				</Button>
-				{user ? null : (
-					<Button asChild variant="secondary">
-						<Link to="/login">Login</Link>
-					</Button>
-				)}
+
+				<Button asChild variant="secondary">
+					<Link to="/login">Login</Link>
+				</Button>
 			</div>
 		</>
 	)

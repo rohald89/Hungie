@@ -1,27 +1,24 @@
 import { Form, useSearchParams, useSubmit } from '@remix-run/react'
 import { useId } from 'react'
-import { useDebounce, useIsPending } from '#app/utils/misc.tsx'
+import { useDebounce } from '#app/utils/misc.tsx'
 import { Icon } from './ui/icon.tsx'
 import { Input } from './ui/input.tsx'
 import { Label } from './ui/label.tsx'
-import { StatusButton } from './ui/status-button.tsx'
 
 export function SearchBar({
-	status,
 	autoFocus = false,
 	autoSubmit = false,
+	formAction = '/recipes',
+	placeholder = 'Search recipes...',
 }: {
-	status: 'idle' | 'pending' | 'success' | 'error'
 	autoFocus?: boolean
 	autoSubmit?: boolean
+	formAction?: string
+	placeholder?: string
 }) {
 	const id = useId()
 	const [searchParams] = useSearchParams()
 	const submit = useSubmit()
-	const isSubmitting = useIsPending({
-		formMethod: 'GET',
-		formAction: '/recipes',
-	})
 
 	const handleFormChange = useDebounce((form: HTMLFormElement) => {
 		submit(form)
@@ -30,34 +27,31 @@ export function SearchBar({
 	return (
 		<Form
 			method="GET"
-			action="/recipes"
-			className="flex flex-wrap items-center justify-center gap-2"
+			action={formAction}
+			className="relative"
 			onChange={(e) => autoSubmit && handleFormChange(e.currentTarget)}
 		>
-			<div className="flex-1">
-				<Label htmlFor={id} className="sr-only">
-					Search Recipes
-				</Label>
+			<div className="relative">
+				<Icon
+					name="magnifying-glass"
+					className="absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground"
+				/>
 				<Input
 					type="search"
 					name="search"
 					id={id}
 					defaultValue={searchParams.get('search') ?? ''}
-					placeholder="Search recipes..."
-					className="w-full"
+					placeholder={placeholder}
+					className="w-full border-0 pl-11 text-lg"
 					autoFocus={autoFocus}
 				/>
 			</div>
-			<div>
-				<StatusButton
-					type="submit"
-					status={isSubmitting ? 'pending' : status}
-					className="flex w-full items-center justify-center"
-				>
-					<Icon name="magnifying-glass" size="md" />
-					<span className="sr-only">Search Recipes</span>
-				</StatusButton>
-			</div>
+			<Label htmlFor={id} className="sr-only">
+				Search
+			</Label>
+			<button type="submit" className="sr-only">
+				Search
+			</button>
 		</Form>
 	)
 }

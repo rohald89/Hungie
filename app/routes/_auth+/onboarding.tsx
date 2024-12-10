@@ -126,7 +126,7 @@ export async function action({ request }: ActionFunctionArgs) {
 }
 
 export const meta: MetaFunction = () => {
-	return [{ title: 'Setup Your Recipe Radar Account' }]
+	return [{ title: 'Setup Your Hungie Account' }]
 }
 
 export default function OnboardingRoute() {

@@ -1,4 +1,5 @@
-import { Link } from '@remix-run/react'
+import { Link, useFetcher } from '@remix-run/react'
+import { useOptionalUser } from '#app/utils/user.js'
 import { Button } from './ui/button'
 import { Icon } from './ui/icon'
 
@@ -8,9 +9,15 @@ type SerializedRecipe = {
 	difficulty: string
 	cookingTime: number
 	calories: number
+	isFavorited?: boolean
 }
 
 export function RecipeCard({ recipe }: { recipe: SerializedRecipe }) {
+	const user = useOptionalUser()
+	const favoriteFetcher = useFetcher<{ isFavorited: boolean }>()
+	const isFavorited =
+		favoriteFetcher.data?.isFavorited ?? recipe.isFavorited ?? false
+
 	return (
 		<div className="rounded-md bg-[#E8ECF9] px-8">
 			<div className="flex items-center justify-between border-b-2 border-b-[#C6CEED] py-6">
@@ -20,9 +27,7 @@ export function RecipeCard({ recipe }: { recipe: SerializedRecipe }) {
 					variant="ghost"
 					className="h-auto p-0 text-body-sm underline"
 				>
-					<Link to={`/scan/${recipe.id}/recipes/${recipe.id}`}>
-						View Recipe
-					</Link>
+					<Link to={`/recipes/${recipe.id}`}>View Recipe</Link>
 				</Button>
 			</div>
 			<div className="flex items-center justify-between py-6">
@@ -37,9 +42,26 @@ export function RecipeCard({ recipe }: { recipe: SerializedRecipe }) {
 						🥘 {recipe.calories} calories
 					</p>
 				</div>
-				<Button variant="ghost" size="icon">
-					<Icon name="star" className="h-4 w-4" />
-				</Button>
+				{user && (
+					<favoriteFetcher.Form method="post" action="/resources/favorite">
+						<input type="hidden" name="recipeId" value={recipe.id} />
+						<Button
+							variant="ghost"
+							size="icon"
+							data-state={isFavorited ? 'favorited' : 'unfavorited'}
+							className="data-[state=favorited]:text-yellow-500 data-[state=unfavorited]:text-muted-foreground"
+						>
+							<Icon
+								name="star"
+								className="h-4 w-4"
+								data-state={isFavorited ? 'favorited' : 'unfavorited'}
+								style={{
+									fill: isFavorited ? 'currentColor' : 'none',
+								}}
+							/>
+						</Button>
+					</favoriteFetcher.Form>
+				)}
 			</div>
 		</div>
 	)

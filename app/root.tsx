@@ -78,7 +78,7 @@ export const links: LinksFunction = () => {
 
 export const meta: MetaFunction<typeof loader> = ({ data }) => {
 	return [
-		{ title: data ? 'RecipeRadar' : 'Error | RecipeRadar' },
+		{ title: data ? 'Hungie' : 'Error | Hungie' },
 		{ name: 'description', content: `Find recipes for your favorite foods` },
 	]
 }

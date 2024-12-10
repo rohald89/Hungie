@@ -1,7 +1,6 @@
-import { useNavigate } from '@remix-run/react'
+import { cn } from '#app/utils/misc'
 import { Icon } from './ui/icon'
 import { ScrollArea } from './ui/scrollarea'
-import { cn } from '#app/utils/misc'
 
 type ButtonConfig = {
 	icon: React.ReactNode

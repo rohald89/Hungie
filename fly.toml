@@ -1,4 +1,4 @@
-app = "reciperadar-0ed8"
+app = "hungie-0ed8"
 primary_region = "ams"
 kill_signal = "SIGINT"
 kill_timeout = 5

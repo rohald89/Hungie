@@ -10,7 +10,6 @@ import { Icon } from '#app/components/ui/icon'
 import { type Ingredients } from '#app/utils/ai.server'
 import { requireUserId } from '#app/utils/auth.server'
 import { prisma } from '#app/utils/db.server'
-import { Button } from '#app/components/ui/button.js'
 import { useEffect } from 'react'
 import { StatusButton } from '#app/components/ui/status-button.js'
 
