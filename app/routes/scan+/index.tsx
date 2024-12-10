@@ -14,7 +14,12 @@ import {
 	type ActionFunctionArgs,
 	redirect,
 } from '@remix-run/node'
-import { Form, useActionData, useNavigation } from '@remix-run/react'
+import {
+	Form,
+	useActionData,
+	useNavigate,
+	useNavigation,
+} from '@remix-run/react'
 import { useState, useEffect, useRef, useCallback } from 'react'
 import { z } from 'zod'
 import { ErrorList } from '#app/components/forms'
@@ -71,6 +76,7 @@ export default function ScanRoute() {
 function ScanPanel() {
 	const actionData = useActionData<typeof action>()
 	const navigation = useNavigation()
+	const navigate = useNavigate()
 	const isPending =
 		navigation.state === 'submitting' || navigation.state === 'loading'
 	const webcamRef = useRef<Webcam>(null)
@@ -151,7 +157,14 @@ function ScanPanel() {
 	}, [form, fields.images.name, imageList])
 
 	return (
-		<PanelWrapper title="Camera">
+		<PanelWrapper
+			title="Camera"
+			rightButton={{
+				icon: <Icon name="cross-1" className="h-5 w-5" />,
+				onClick: () => navigate(-1),
+				ariaLabel: 'Navigate back',
+			}}
+		>
 			{isPending ? (
 				<AnalyzingImages />
 			) : (

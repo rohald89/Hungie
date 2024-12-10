@@ -1,10 +1,10 @@
 import { json, type LoaderFunctionArgs } from '@remix-run/node'
-import { useFetcher, useRouteLoaderData } from '@remix-run/react'
+import { useFetcher, useNavigate, useRouteLoaderData } from '@remix-run/react'
+import { useEffect } from 'react'
 import { PanelWrapper } from '#app/components/panel-wrapper.js'
 import { Icon } from '#app/components/ui/icon.js'
 import { requireUserId } from '#app/utils/auth.server'
 import { prisma } from '#app/utils/db.server'
-import { useEffect } from 'react'
 
 export async function loader({ request, params }: LoaderFunctionArgs) {
 	const userId = await requireUserId(request)
@@ -54,6 +54,7 @@ export async function loader({ request, params }: LoaderFunctionArgs) {
 }
 
 function RecipePanel() {
+	const navigate = useNavigate()
 	const imageFetcher = useFetcher<{ imageUrl: string }>()
 	const data = useRouteLoaderData<typeof loader>(
 		'routes/scan+/$scanId_+/recipes_+/$recipeId',
@@ -76,15 +77,29 @@ function RecipePanel() {
 		: imageFetcher.data?.imageUrl
 
 	return (
-		<PanelWrapper title={recipe.title}>
+		<PanelWrapper
+			title={recipe.title}
+			leftButton={{
+				icon: <Icon name="arrow-left1" className="h-5 w-5" />,
+				className: 'bg-white hover:bg-white transition hover:-translate-x-1',
+				onClick: () => navigate(-1),
+				ariaLabel: 'Navigate back',
+			}}
+			rightButton={{
+				icon: <Icon name="star" className="h-5 w-5" />,
+				className: 'bg-white hover:bg-white',
+				onClick: () => navigate(-1),
+				ariaLabel: 'Navigate back',
+			}}
+		>
 			<div className="space-y-8">
 				<div className="rounded-lg bg-muted">
 					{imageUrl && (
-						<div className="aspect-video">
+						<div className="max-h-56 w-full">
 							<img
 								src={imageUrl}
 								alt={recipe.title}
-								className="h-full w-full rounded-t-lg object-cover"
+								className="max-h-56 w-full rounded-t-lg object-cover"
 							/>
 						</div>
 					)}
@@ -118,7 +133,7 @@ function RecipePanel() {
 					</ul>
 				</div>
 
-				<div>
+				<div className="pb-12">
 					<h2 className="text-h4">Instructions</h2>
 					<ol className="mt-2 list-inside list-decimal space-y-2">
 						{recipe.instructions.map((instruction, index) => (

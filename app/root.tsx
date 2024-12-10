@@ -213,11 +213,9 @@ function App() {
 
 	useToast(data.toast)
 
-	console.log(user)
-
 	return (
 		<>
-			<div className="flex h-screen gap-10 overflow-hidden">
+			<div className="mx-auto flex h-screen max-w-screen-2xl gap-12 overflow-hidden">
 				{/* Left Section */}
 				<div className="flex w-2/5 flex-col pb-14 pl-24 pt-20">
 					<header className="mb-auto space-y-2">
@@ -276,36 +274,6 @@ function App() {
 					<PanelContent />
 				</div>
 			</div>
-
-			{/* <div className="flex h-screen flex-col justify-between">
-				<header className="container py-6">
-					<nav className="flex flex-wrap items-center justify-between gap-4 sm:flex-nowrap md:gap-8">
-						<Logo />
-						<div className="ml-auto hidden max-w-sm flex-1 sm:block">
-							{searchBar}
-						</div>
-						<div className="flex items-center gap-10">
-							{user ? (
-								<UserDropdown />
-							) : (
-								<Button asChild variant="default" size="lg">
-									<Link to="/login">Log In</Link>
-								</Button>
-							)}
-						</div>
-						<div className="block w-full sm:hidden">{searchBar}</div>
-					</nav>
-				</header>
-
-				<div className="flex-1">
-					<Outlet />
-				</div>
-
-				<div className="container flex justify-between pb-5">
-					<Logo />
-					<ThemeSwitch userPreference={data.requestInfo.userPrefs.theme} />
-				</div>
-			</div> */}
 			<EpicToaster closeButton position="top-center" theme={theme} />
 			<EpicProgress />
 		</>
@@ -338,67 +306,6 @@ function AppWithProviders() {
 }
 
 export default withSentry(AppWithProviders)
-
-// function UserDropdown() {
-// 	const user = useUser()
-// 	const submit = useSubmit()
-// 	const formRef = useRef<HTMLFormElement>(null)
-// 	return (
-// 		<DropdownMenu>
-// 			<DropdownMenuTrigger asChild>
-// 				<Button asChild variant="secondary">
-// 					<Link
-// 						to={`/users/${user.username}`}
-// 						// this is for progressive enhancement
-// 						onClick={(e) => e.preventDefault()}
-// 						className="flex items-center gap-2"
-// 					>
-// 						<img
-// 							className="h-8 w-8 rounded-full object-cover"
-// 							alt={user.name ?? user.username}
-// 							src={getUserImgSrc(user.image?.id)}
-// 						/>
-// 						<span className="text-body-sm font-bold">
-// 							{user.name ?? user.username}
-// 						</span>
-// 					</Link>
-// 				</Button>
-// 			</DropdownMenuTrigger>
-// 			<DropdownMenuPortal>
-// 				<DropdownMenuContent sideOffset={8} align="start">
-// 					<DropdownMenuItem asChild>
-// 						<Link prefetch="intent" to={`/users/${user.username}`}>
-// 							<Icon className="text-body-md" name="avatar">
-// 								Profile
-// 							</Icon>
-// 						</Link>
-// 					</DropdownMenuItem>
-// 					<DropdownMenuItem asChild>
-// 						<Link prefetch="intent" to={`/users/${user.username}/notes`}>
-// 							<Icon className="text-body-md" name="pencil-2">
-// 								Notes
-// 							</Icon>
-// 						</Link>
-// 					</DropdownMenuItem>
-// 					<DropdownMenuItem
-// 						asChild
-// 						// this prevents the menu from closing before the form submission is completed
-// 						onSelect={(event) => {
-// 							event.preventDefault()
-// 							submit(formRef.current)
-// 						}}
-// 					>
-// 						<Form action="/logout" method="POST" ref={formRef}>
-// 							<Icon className="text-body-md" name="exit">
-// 								<button type="submit">Logout</button>
-// 							</Icon>
-// 						</Form>
-// 					</DropdownMenuItem>
-// 				</DropdownMenuContent>
-// 			</DropdownMenuPortal>
-// 		</DropdownMenu>
-// 	)
-// }
 
 // this is a last resort error boundary. There's not much useful information we
 // can offer at this level.

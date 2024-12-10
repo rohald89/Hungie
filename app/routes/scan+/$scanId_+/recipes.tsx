@@ -1,5 +1,5 @@
 import { json, type LoaderFunctionArgs } from '@remix-run/node'
-import { Link, useRouteLoaderData } from '@remix-run/react'
+import { Link, useNavigate, useRouteLoaderData } from '@remix-run/react'
 import { PanelWrapper } from '#app/components/panel-wrapper'
 import { Button } from '#app/components/ui/button.js'
 import { Icon } from '#app/components/ui/icon.js'

@@ -12,6 +12,7 @@ import { requireUserId } from '#app/utils/auth.server'
 import { prisma } from '#app/utils/db.server'
 import { Button } from '#app/components/ui/button.js'
 import { useEffect } from 'react'
+import { StatusButton } from '#app/components/ui/status-button.js'
 
 export async function loader({ request, params }: LoaderFunctionArgs) {
 	const userId = await requireUserId(request)
@@ -102,12 +103,18 @@ function IngredientsPanel() {
 					</div>
 				))}
 			</div>
-			<Button
+			<StatusButton
+				type="submit"
 				onClick={handleGenerateRecipes}
 				disabled={recipeFetcher.state !== 'idle'}
+				status={recipeFetcher.state !== 'idle' ? 'pending' : 'idle'}
+				className="absolute bottom-8 right-8 h-20 w-20"
 			>
-				{recipeFetcher.state !== 'idle' ? 'Generating...' : 'Generate recipes'}
-			</Button>
+				{recipeFetcher.state === 'idle' ? (
+					<Icon name="check" className="text-4xl" />
+				) : null}
+				<p className="sr-only">Generate recipes</p>
+			</StatusButton>
 		</PanelWrapper>
 	)
 }

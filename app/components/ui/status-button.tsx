@@ -27,7 +27,7 @@ export const StatusButton = React.forwardRef<
 		pending: delayedPending ? (
 			<div
 				role="status"
-				className="inline-flex h-6 w-6 items-center justify-center"
+				className="inline-flex h-6 w-6 -translate-x-1/2 items-center justify-center"
 			>
 				<Icon name="update" className="animate-spin" title="loading" />
 			</div>
