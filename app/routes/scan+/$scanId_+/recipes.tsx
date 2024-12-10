@@ -5,6 +5,7 @@ import { Button } from '#app/components/ui/button.js'
 import { Icon } from '#app/components/ui/icon.js'
 import { requireUserId } from '#app/utils/auth.server'
 import { prisma } from '#app/utils/db.server'
+import { RecipeCard } from '#app/components/recipe-card.js'
 
 export async function loader({ request, params }: LoaderFunctionArgs) {
 	const userId = await requireUserId(request)
@@ -63,12 +64,12 @@ export const handle = {
 
 export default function RecipesRoute() {
 	return (
-		<main className="mt-40">
-			<p className="text-h2">📝</p>
+		<>
+			<p className="text-5xl">📝</p>
 			<h2 className="mt-5 text-h6 text-muted-foreground">Step 2</h2>
 			<p className="mt-4 text-body-md">Your recipes are ready!</p>
 			<p className="mt-4 text-body-md">Choose one to start cooking.</p>
-		</main>
+		</>
 	)
 }
 
@@ -80,46 +81,6 @@ function NoRecipes() {
 				<Icon name="plus" />
 				Generate recipe
 			</Button>
-		</div>
-	)
-}
-
-type SerializedRecipe = {
-	id: string
-	title: string
-	difficulty: string
-	cookingTime: number
-	calories: number
-}
-
-function RecipeCard({ recipe }: { recipe: SerializedRecipe }) {
-	return (
-		<div className="rounded-md bg-[#E8ECF9] px-8">
-			<div className="flex items-center justify-between border-b-2 border-b-[#C6CEED] py-6">
-				<h3 className="text-h7">{recipe.title}</h3>
-				<Button
-					asChild
-					variant="ghost"
-					className="h-auto p-0 text-body-sm underline"
-				>
-					<Link to={`/scan/${recipe.id}/recipes/${recipe.id}`}>
-						View recipe
-					</Link>
-				</Button>
-			</div>
-			<div className="flex items-center justify-between py-6">
-				<div className="flex items-center gap-4">
-					<p className="text-body-sm capitalize text-muted-foreground">
-						👨‍🍳 {recipe.difficulty.toLowerCase()}
-					</p>
-					<p className="text-body-sm text-muted-foreground">
-						⏲️ {recipe.cookingTime} minutes
-					</p>
-					<p className="text-body-sm text-muted-foreground">
-						🥘 {recipe.calories} calories
-					</p>
-				</div>
-			</div>
 		</div>
 	)
 }

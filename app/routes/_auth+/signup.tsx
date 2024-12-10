@@ -100,7 +100,7 @@ export function SignupEmail({
 		<E.Html lang="en" dir="ltr">
 			<E.Container>
 				<h1>
-					<E.Text>Welcome to Epic Notes!</E.Text>
+					<E.Text>Welcome to Hungie!</E.Text>
 				</h1>
 				<p>
 					<E.Text>
@@ -138,10 +138,10 @@ export default function SignupRoute() {
 	})
 
 	return (
-		<div className="container flex flex-col justify-center pb-32 pt-20">
+		<div className="container flex flex-col justify-center px-8">
 			<div className="text-center">
-				<h1 className="text-h1">Let's start your journey!</h1>
-				<p className="mt-3 text-body-md text-muted-foreground">
+				<h1 className="mb-10 text-h6 uppercase">Let's start your journey!</h1>
+				<p className="text-body-md text-muted-foreground">
 					Please enter your email.
 				</p>
 			</div>

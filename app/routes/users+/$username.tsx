@@ -36,10 +36,10 @@ export default function ProfileRoute() {
 	const isLoggedInUser = data.user.id === loggedInUser?.id
 
 	return (
-		<div className="container mb-48 mt-36 flex flex-col items-center justify-center">
+		<div className="container mb-12 mt-20 flex flex-col items-center justify-center">
 			<Spacer size="4xs" />
 
-			<div className="container flex flex-col items-center rounded-3xl bg-muted p-12">
+			<div className="flex flex-col items-center rounded-3xl bg-muted p-12">
 				<div className="relative w-52">
 					<div className="absolute -top-40">
 						<div className="relative">
@@ -56,7 +56,7 @@ export default function ProfileRoute() {
 
 				<div className="flex flex-col items-center">
 					<div className="flex flex-wrap items-center justify-center gap-4">
-						<h1 className="text-center text-h2">{userDisplayName}</h1>
+						<h2 className="text-center text-h6">{userDisplayName}</h2>
 					</div>
 					<p className="mt-2 text-center text-muted-foreground">
 						Joined {data.userJoinedDisplay}
@@ -70,12 +70,12 @@ export default function ProfileRoute() {
 							</Button>
 						</Form>
 					) : null}
-					<div className="mt-10 flex gap-4">
+					<div className="mt-10 flex flex-col gap-4">
 						{isLoggedInUser ? (
 							<>
 								<Button asChild>
-									<Link to="notes" prefetch="intent">
-										My notes
+									<Link to="recipes" prefetch="intent">
+										My recipes
 									</Link>
 								</Button>
 								<Button asChild>
@@ -86,8 +86,8 @@ export default function ProfileRoute() {
 							</>
 						) : (
 							<Button asChild>
-								<Link to="notes" prefetch="intent">
-									{userDisplayName}'s notes
+								<Link to="recipes" prefetch="intent">
+									{userDisplayName}'s recipes
 								</Link>
 							</Button>
 						)}

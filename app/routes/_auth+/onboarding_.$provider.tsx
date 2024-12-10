@@ -196,15 +196,14 @@ export default function OnboardingProviderRoute() {
 	})
 
 	return (
-		<div className="container flex min-h-full flex-col justify-center pb-32 pt-20">
+		<div className="container flex min-h-full flex-col justify-center py-8">
 			<div className="mx-auto w-full max-w-lg">
-				<div className="flex flex-col gap-3 text-center">
-					<h1 className="text-h1">Welcome aboard {data.email}!</h1>
+				<div className="mb-4 flex flex-col gap-3 text-center">
+					<h2 className="mb-10 text-h6 uppercase">Welcome aboard!</h2>
 					<p className="text-body-md text-muted-foreground">
-						Please enter your details.
+						Please enter your details to complete onboarding
 					</p>
 				</div>
-				<Spacer size="xs" />
 				<Form
 					method="POST"
 					className="mx-auto min-w-full max-w-sm sm:min-w-[368px]"

@@ -1,6 +1,7 @@
 import { type MetaFunction } from '@remix-run/node'
 import { Link } from '@remix-run/react'
 import { Button } from '#app/components/ui/button.js'
+import { useOptionalUser } from '#app/utils/user.js'
 
 export const meta: MetaFunction = () => [{ title: 'Hungie' }]
 
@@ -11,9 +12,10 @@ const steps = [
 ]
 
 export default function Index() {
+	const user = useOptionalUser()
 	return (
-		<main className="mt-40">
-			<p className="text-mega">📸</p>
+		<>
+			<p className="text-5xl">📸</p>
 			<h2 className="mt-5 text-h6 text-muted-foreground">
 				Here’s how it works:
 			</h2>
@@ -31,10 +33,12 @@ export default function Index() {
 				<Button asChild>
 					<Link to="/scan">Open Camera</Link>
 				</Button>
-				<Button asChild variant="secondary">
-					<Link to="/login">Login</Link>
-				</Button>
+				{user ? null : (
+					<Button asChild variant="secondary">
+						<Link to="/login">Login</Link>
+					</Button>
+				)}
 			</div>
-		</main>
+		</>
 	)
 }

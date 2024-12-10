@@ -14,12 +14,14 @@ import {
 	Scripts,
 	ScrollRestoration,
 	useLoaderData,
+	useLocation,
 } from '@remix-run/react'
 import { withSentry } from '@sentry/remix'
 import { HoneypotProvider } from 'remix-utils/honeypot/react'
 import appleTouchIconAssetUrl from './assets/favicons/apple-touch-icon.png'
 import faviconAssetUrl from './assets/favicons/favicon.svg'
 import { GeneralErrorBoundary } from './components/error-boundary.tsx'
+import { PanelContent } from './components/PanelContent.tsx'
 import { EpicProgress } from './components/progress-bar.tsx'
 import { useToast } from './components/toaster.tsx'
 import { href as iconsHref } from './components/ui/icon.tsx'
@@ -39,8 +41,8 @@ import { useNonce } from './utils/nonce-provider.ts'
 import { type Theme, getTheme } from './utils/theme.server.ts'
 import { makeTimings, time } from './utils/timing.server.ts'
 import { getToast } from './utils/toast.server.ts'
-import { PanelContent } from './components/PanelContent.tsx'
 import { useOptionalUser } from './utils/user.ts'
+import { Button } from './components/ui/button.tsx'
 
 export const links: LinksFunction = () => {
 	return [
@@ -210,6 +212,8 @@ function App() {
 	const data = useLoaderData<typeof loader>()
 	const user = useOptionalUser()
 	const theme = useTheme()
+	const location = useLocation()
+	const showWelcome = location.pathname.startsWith('/scan')
 
 	useToast(data.toast)
 
@@ -223,7 +227,10 @@ function App() {
 						<Slogan />
 					</header>
 
-					<main className="flex-grow">
+					<main className="flex flex-grow flex-col justify-center">
+						{showWelcome && user ? (
+							<p className="mb-10 text-h6">Welcome, {user.name}!</p>
+						) : null}
 						<Outlet />
 					</main>
 
@@ -231,21 +238,17 @@ function App() {
 						<nav>
 							<ul className="flex items-center gap-4">
 								<li>
-									<Link to="/careers">Careers</Link>
+									<Link to="/">Home</Link>
 								</li>
 								<li className="flex items-center gap-4">
 									<div className="h-1 w-1 bg-muted-foreground" />
-									<Link to="/privacy">Privacy</Link>
-								</li>
-								<li className="flex items-center gap-4">
-									<div className="h-1 w-1 bg-muted-foreground" />
-									<Link to="/terms">Terms</Link>
+									<Link to="/recipes">Explore</Link>
 								</li>
 								{user ? (
 									<>
 										<li className="flex items-center gap-4">
 											<div className="h-1 w-1 bg-muted-foreground" />
-											<Link to="/settings/profile">Edit Profile</Link>
+											<Link to="/settings/profile">Profile</Link>
 										</li>
 										<li className="flex items-center gap-4">
 											<div className="h-1 w-1 bg-muted-foreground" />

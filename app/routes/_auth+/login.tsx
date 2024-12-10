@@ -100,16 +100,9 @@ export default function LoginPage() {
 	return (
 		<div className="flex min-h-full flex-col justify-center pb-32 pt-20">
 			<div className="mx-auto w-full max-w-md">
-				<div className="flex flex-col gap-3 text-center">
-					<h1 className="text-h1">Welcome back!</h1>
-					<p className="text-body-md text-muted-foreground">
-						Please enter your details.
-					</p>
-				</div>
-				<Spacer size="xs" />
-
+				<h2 className="mb-6 text-h6 uppercase">Login</h2>
 				<div>
-					<div className="mx-auto w-full max-w-md px-8">
+					<div className="mx-auto w-full max-w-md">
 						<Form method="POST" {...getFormProps(form)}>
 							<HoneypotInputs />
 							<Field

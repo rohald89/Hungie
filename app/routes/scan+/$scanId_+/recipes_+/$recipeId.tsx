@@ -154,8 +154,8 @@ export const handle = {
 
 export default function RecipeRoute() {
 	return (
-		<main className="mt-40">
-			<p className="text-h2">🥘</p>
+		<>
+			<p className="text-5xl">🥘</p>
 			<h2 className="mt-5 text-h6 text-muted-foreground">Step 3</h2>
 			<p className="mt-4 text-body-md">
 				Here are your personalized recipes based on your available ingredients.
@@ -163,6 +163,6 @@ export default function RecipeRoute() {
 			<p className="mt-4 text-body-md">
 				Select a recipe to view its details and cooking instructions.
 			</p>
-		</main>
+		</>
 	)
 }

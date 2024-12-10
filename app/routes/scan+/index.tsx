@@ -60,8 +60,8 @@ const ScanFormSchema = z.object({
 
 export default function ScanRoute() {
 	return (
-		<main className="mt-40">
-			<p className="text-h2">🛒</p>
+		<>
+			<p className="text-5xl">🛒</p>
 			<h2 className="mt-5 text-h6 text-muted-foreground">Step 1</h2>
 			<p className="mt-4 text-body-md">
 				Capture or upload a maximum of five (5) photos of your food items.
@@ -69,7 +69,7 @@ export default function ScanRoute() {
 			<p className="mt-4 text-body-md">
 				Our AI will provide a checklist of all the items that it captured.
 			</p>
-		</main>
+		</>
 	)
 }
 
