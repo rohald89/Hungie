@@ -3,9 +3,11 @@ import { useFetcher, useNavigate, useRouteLoaderData } from '@remix-run/react'
 import { useCallback } from 'react'
 import { PanelWrapper } from '#app/components/panel-wrapper.js'
 import { Icon } from '#app/components/ui/icon.js'
-import { getUserId } from '#app/utils/auth.server'
 import { prisma } from '#app/utils/db.server'
+import { getUserId } from '#app/utils/auth.server'
 import { useOptionalUser } from '#app/utils/user'
+import { Button } from '#app/components/ui/button'
+import { cn } from '#app/utils/misc'
 
 export async function loader({ request, params }: LoaderFunctionArgs) {
 	const userId = await getUserId(request)
@@ -92,14 +94,15 @@ function RecipePanel() {
 								<Icon
 									name="star"
 									className="h-5 w-5"
-									data-state={isFavorited ? 'favorited' : 'unfavorited'}
 									style={{
 										fill: isFavorited ? 'currentColor' : 'none',
 									}}
 								/>
 							),
-							className:
-								'bg-white hover:bg-white data-[state=favorited]:text-yellow-500 data-[state=unfavorited]:text-muted-foreground',
+							className: cn(
+								'bg-white hover:bg-white',
+								isFavorited ? 'text-yellow-500' : 'text-muted-foreground',
+							),
 							onClick: handleFavorite,
 							ariaLabel: isFavorited
 								? 'Remove from favorites'
