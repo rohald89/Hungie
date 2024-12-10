@@ -56,7 +56,7 @@ export default function ProfileRoute() {
 
 				<div className="flex flex-col items-center">
 					<div className="flex flex-wrap items-center justify-center gap-4">
-						<h2 className="text-center text-h6">{userDisplayName}</h2>
+						<h1 className="text-center text-h6">{userDisplayName}</h1>
 					</div>
 					<p className="mt-2 text-center text-muted-foreground">
 						Joined {data.userJoinedDisplay}
