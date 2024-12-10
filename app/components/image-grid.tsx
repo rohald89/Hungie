@@ -1,6 +1,6 @@
 function ImageGrid() {
 	return (
-		<div className="-mt-8 ml-16 flex gap-x-8">
+		<div className="-mt-8 flex gap-x-8">
 			{/* Column 1 - 3 images */}
 			<div className="flex flex-col gap-y-24 pt-36">
 				{[1, 2, 3].map((i) => (
@@ -11,7 +11,7 @@ function ImageGrid() {
 						<img
 							src={`/img/hungie-grid-${i}.png`}
 							alt={`Food item ${i}`}
-							className="h-[200px] w-[200px] rounded-2xl object-cover"
+							className="object-fit h-[200px] w-[200px] rounded-2xl"
 						/>
 					</div>
 				))}
