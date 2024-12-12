@@ -248,7 +248,7 @@ function App() {
 									<>
 										<li className="flex items-center gap-4">
 											<div className="h-1 w-1 bg-muted-foreground" />
-											<Link to="/settings/profile">Profile</Link>
+											<Link to="/me">Profile</Link>
 										</li>
 										<li className="flex items-center gap-4">
 											<div className="h-1 w-1 bg-muted-foreground" />
