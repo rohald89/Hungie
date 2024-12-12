@@ -131,7 +131,7 @@ export default function EditUserProfile() {
 			<UpdateProfile />
 
 			<div className="col-span-6 my-2 h-1 border-b-[1.5px] border-foreground" />
-			<div className="col-span-full flex flex-col gap-6">
+			<div className="col-span-full flex flex-col gap-2">
 				<div>
 					<Link to="change-email">
 						<Icon name="envelope-closed">

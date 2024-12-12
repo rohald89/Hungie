@@ -1,5 +1,10 @@
 import { json, type LoaderFunctionArgs } from '@remix-run/node'
-import { Link, useRouteLoaderData, useSearchParams } from '@remix-run/react'
+import {
+	Link,
+	useParams,
+	useRouteLoaderData,
+	useSearchParams,
+} from '@remix-run/react'
 import { PanelWrapper } from '#app/components/panel-wrapper.js'
 import { RecipeCard } from '#app/components/recipe-card.js'
 import { SearchBar } from '#app/components/search-bar.js'
@@ -9,14 +14,23 @@ import { prisma } from '#app/utils/db.server.js'
 
 export const meta = () => [{ title: 'Hungie' }]
 
-export async function loader({ request }: LoaderFunctionArgs) {
+export async function loader({ request, params }: LoaderFunctionArgs) {
 	const userId = await requireUserId(request)
 	const searchParams = new URL(request.url).searchParams
 	const query = searchParams.get('search')
 
+	const user = await prisma.user.findUnique({
+		where: { username: params.username },
+		select: { id: true },
+	})
+
+	if (!user) {
+		throw new Response('Not found', { status: 404 })
+	}
+
 	const recipes = await prisma.recipe.findMany({
 		where: {
-			userId,
+			userId: user.id,
 			...(query
 				? {
 						OR: [
@@ -41,7 +55,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
 	})
 
 	return json({
-		recipes: recipes.map(recipe => ({
+		recipes: recipes.map((recipe) => ({
 			...recipe,
 			isFavorited: recipe.favorites.length > 0,
 			favorites: undefined,
@@ -92,13 +106,18 @@ function PanelContent() {
 	)
 	const [searchParams] = useSearchParams()
 	const query = searchParams.get('search')
+	const params = useParams()
 
 	console.log(data)
 
 	return (
 		<PanelWrapper title="Your Saved Recipes" rightButton={false}>
 			<div className="mb-8 w-full">
-				<SearchBar autoSubmit formAction="/" placeholder="Search recipes..." />
+				<SearchBar
+					autoSubmit
+					formAction={`/users/${params.username}/recipes`}
+					placeholder="Search recipes..."
+				/>
 			</div>
 			<div className="mt-8 flex flex-col gap-8 pb-10">
 				{data?.recipes.length === 0 ? (
