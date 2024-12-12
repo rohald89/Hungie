@@ -120,9 +120,11 @@ export default function ChangeEmailIndex() {
 	const isPending = useIsPending()
 	return (
 		<div>
-			<h1 className="text-h1">Change Email</h1>
-			<p>You will receive an email at the new email address to confirm.</p>
-			<p>
+			<h1 className="mb-4 text-h6">Change Email</h1>
+			<p className="mb-4">
+				You will receive an email at the new email address to confirm.
+			</p>
+			<p className="mb-4">
 				An email notice will also be sent to your old address {data.user.email}.
 			</p>
 			<div className="mx-auto mt-5 max-w-sm">

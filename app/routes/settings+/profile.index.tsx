@@ -104,9 +104,9 @@ export default function EditUserProfile() {
 	const data = useLoaderData<typeof loader>()
 
 	return (
-		<div className="flex flex-col gap-12">
+		<div className="flex flex-col">
 			<div className="flex justify-center">
-				<div className="relative h-52 w-52">
+				<div className="relative h-24 w-24">
 					<img
 						src={getUserImgSrc(data.user.image?.id)}
 						alt={data.user.username}
@@ -130,7 +130,7 @@ export default function EditUserProfile() {
 			</div>
 			<UpdateProfile />
 
-			<div className="col-span-6 my-6 h-1 border-b-[1.5px] border-foreground" />
+			<div className="col-span-6 my-2 h-1 border-b-[1.5px] border-foreground" />
 			<div className="col-span-full flex flex-col gap-6">
 				<div>
 					<Link to="change-email">
@@ -236,9 +236,9 @@ function UpdateProfile() {
 
 	return (
 		<fetcher.Form method="POST" {...getFormProps(form)}>
-			<div className="grid grid-cols-6 gap-x-10">
+			<div className="grid">
 				<Field
-					className="col-span-3"
+					className=""
 					labelProps={{
 						htmlFor: fields.username.id,
 						children: 'Username',
@@ -247,7 +247,7 @@ function UpdateProfile() {
 					errors={fields.username.errors}
 				/>
 				<Field
-					className="col-span-3"
+					className=""
 					labelProps={{ htmlFor: fields.name.id, children: 'Name' }}
 					inputProps={getInputProps(fields.name, { type: 'text' })}
 					errors={fields.name.errors}
@@ -256,15 +256,16 @@ function UpdateProfile() {
 
 			<ErrorList errors={form.errors} id={form.errorId} />
 
-			<div className="mt-8 flex justify-center">
+			<div className="mt-3 flex justify-center">
 				<StatusButton
 					type="submit"
-					size="wide"
+					size="sm"
 					name="intent"
 					value={profileUpdateActionIntent}
 					status={
 						fetcher.state !== 'idle' ? 'pending' : (form.status ?? 'idle')
 					}
+					className="ml-auto"
 				>
 					Save changes
 				</StatusButton>
@@ -352,6 +353,7 @@ function DeleteData() {
 					})}
 					variant={dc.doubleCheck ? 'destructive' : 'default'}
 					status={fetcher.state !== 'idle' ? 'pending' : 'idle'}
+					size="sm"
 				>
 					<Icon name="trash">
 						{dc.doubleCheck ? `Are you sure?` : `Delete all your data`}

@@ -90,15 +90,15 @@ export function OTPField({
 				{...inputProps}
 			>
 				<InputOTPGroup>
-					<InputOTPSlot index={0} />
-					<InputOTPSlot index={1} />
-					<InputOTPSlot index={2} />
+					<InputOTPSlot index={0} className="bg-background" />
+					<InputOTPSlot index={1} className="bg-background" />
+					<InputOTPSlot index={2} className="bg-background" />
 				</InputOTPGroup>
 				<InputOTPSeparator />
 				<InputOTPGroup>
-					<InputOTPSlot index={3} />
-					<InputOTPSlot index={4} />
-					<InputOTPSlot index={5} />
+					<InputOTPSlot index={3} className="bg-background" />
+					<InputOTPSlot index={4} className="bg-background" />
+					<InputOTPSlot index={5} className="bg-background" />
 				</InputOTPGroup>
 			</InputOTP>
 			<div className="min-h-[32px] px-4 pb-3 pt-1">

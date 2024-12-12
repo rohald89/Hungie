@@ -154,7 +154,7 @@ export default function TwoFactorRoute() {
 	return (
 		<div>
 			<div className="flex flex-col items-center gap-4">
-				<img alt="qr code" src={data.qrCode} className="h-56 w-56" />
+				<img alt="qr code" src={data.qrCode} className="h-32 w-32" />
 				<p>Scan this QR code with your authenticator app.</p>
 				<p className="text-sm">
 					If you cannot scan the QR code, you can manually add this account to
